@@ -1,8 +1,13 @@
 import com.formdev.flatlaf.themes.FlatMacDarkLaf
 import java.awt.Color
 import java.awt.Font
+import java.awt.Image
+import java.awt.event.MouseAdapter
+import java.awt.event.MouseEvent
 import javax.swing.*
 
+
+fun ImageIcon.scaled(width: Int, height: Int): ImageIcon = ImageIcon(image.getScaledInstance(width, height, Image.SCALE_SMOOTH))
 /**
  * Application entry point
  */
@@ -25,6 +30,15 @@ fun main() {
 class App {
     var name = "Test"
     var score = 0
+    var locations = listOf(
+        Location("Nut Den", ImageIcon(ClassLoader.getSystemResource("images/Map.png")).scaled(1080, 524), 82, 233, 420, 505),
+        Location("Old Tree Shack", ImageIcon(ClassLoader.getSystemResource("images/Map.png")).scaled(1080, 524), 111, 287, 75, 247),
+        Location("Tree House", ImageIcon(ClassLoader.getSystemResource("images/Map.png")).scaled(1080, 524), 321, 496, 205, 396),
+        Location("Pine Tower", ImageIcon(ClassLoader.getSystemResource("images/Map.png")).scaled(1080, 524), 578, 693, 74, 272),
+        Location("Hole Home", ImageIcon(ClassLoader.getSystemResource("images/Map.png")).scaled(1080, 524), 746, 921, 335, 463),
+        Location("Cave Manor", ImageIcon(ClassLoader.getSystemResource("images/Map.png")).scaled(1080, 524), 871, 1023, 74, 184)
+    )
+
 
     fun scorePoints(points: Int) {
         score += points
@@ -46,14 +60,13 @@ class App {
  * @param app the app state object
  */
 class MainWindow(val app: App) {
-    val frame = JFrame("WINDOW TITLE")
+    val frame = JFrame("Nutdealer")
     private val panel = JPanel().apply { layout = null }
 
-    private val titleLabel = JLabel("APP TITLE")
-
-    private val infoLabel = JLabel()
-    private val clickButton = JButton("Click Me!")
-    private val infoButton = JButton("Info")
+    private val gameBackgroundLabel = JLabel()
+    private val backgroundImage = ImageIcon(ClassLoader.getSystemResource("images/Map.png")).scaled(1080, 524)
+    private val UIbackgroundLabel = JLabel()
+    private val UIBackgroundImage = ImageIcon(ClassLoader.getSystemResource("images/UserInterfaceBackground.png")).scaled(1080, 202)
 
     private val infoWindow = InfoWindow(this, app)      // Pass app state to dialog too
 
@@ -66,27 +79,21 @@ class MainWindow(val app: App) {
     }
 
     private fun setupLayout() {
-        panel.preferredSize = java.awt.Dimension(400, 220)
+        panel.preferredSize = java.awt.Dimension(1080, 726)
 
-        titleLabel.setBounds(30, 30, 340, 30)
-        infoLabel.setBounds(30, 90, 340, 30)
-        clickButton.setBounds(30, 150, 240, 40)
-        infoButton.setBounds(300, 150, 70, 40)
+        gameBackgroundLabel.setBounds(0, 0, 1080, 524)
+        UIbackgroundLabel.setBounds(0, 524, 1080, 202)
 
-        panel.add(titleLabel)
-        panel.add(infoLabel)
-        panel.add(clickButton)
-        panel.add(infoButton)
+        panel.add(gameBackgroundLabel)
+        panel.add(UIbackgroundLabel)
+
+
     }
 
     private fun setupStyles() {
-        titleLabel.font = Font(Font.SANS_SERIF, Font.BOLD, 32)
-        infoLabel.font = Font(Font.SANS_SERIF, Font.PLAIN, 20)
+        gameBackgroundLabel.icon = backgroundImage
+        UIbackgroundLabel.icon = UIBackgroundImage
 
-        clickButton.font = Font(Font.SANS_SERIF, Font.PLAIN, 20)
-        clickButton.background = Color(0xcc0055)
-
-        infoButton.font = Font(Font.SANS_SERIF, Font.PLAIN, 20)
     }
 
     private fun setupWindow() {
@@ -98,8 +105,20 @@ class MainWindow(val app: App) {
     }
 
     private fun setupActions() {
-        clickButton.addActionListener { handleMainClick() }
-        infoButton.addActionListener { handleInfoClick() }
+        gameBackgroundLabel.addMouseListener(object : MouseAdapter() {
+            override fun mouseClicked(e: MouseEvent) {
+                // This code runs when the label is clicked
+                println("${e.x}, ${e.y}")
+
+                for (location in app.locations){
+                    if(e.x in location.coordXMin..location.coordXMax && e.y in location.coordYMin..location.coordYMax ){
+                        println(location.name)
+                    }
+
+                }
+            }
+        })
+
     }
 
     private fun handleMainClick() {
@@ -112,15 +131,7 @@ class MainWindow(val app: App) {
     }
 
     fun updateUI() {
-        infoLabel.text = "User ${app.name} has ${app.score} points"
 
-        if (app.maxScoreReached()) {
-            clickButton.text = "No More!"
-            clickButton.isEnabled = false
-        } else {
-            clickButton.text = "Click Me!"
-            clickButton.isEnabled = true
-        }
 
         infoWindow.updateUI()       // Keep child dialog window UI up-to-date too
     }
@@ -200,4 +211,8 @@ class InfoWindow(val owner: MainWindow, val app: App) {
 
         dialog.isVisible = true
     }
+}
+
+class Location(val name: String, val backgroundImage: ImageIcon, val coordXMin: Int, val coordXMax: Int, val coordYMin: Int, val coordYMax: Int) {
+
 }

@@ -10,7 +10,7 @@ Terminology:
 
 ---
 
-## Example Test Name
+## Testing Bounding Boxes on Locations
 
 Example test description. Example test description. Example test description. Example test description. Example test description. Example test description.
 

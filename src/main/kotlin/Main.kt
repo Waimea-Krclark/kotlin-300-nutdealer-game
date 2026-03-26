@@ -31,33 +31,22 @@ fun main() {
  * @property score the points earned
  */
 class App {
-    var name = "Test"
-    var score = 0
-    var locations = listOf(
-        Location("Nut Den", mutableListOf(1,2), ImageIcon(ClassLoader.getSystemResource("images/Map.png")).scaled(1080, 524), 82, 233, 420, 505),
+    var locations = listOf( // Creates each location with required arguments
+        Location("Nut Den", mutableListOf(1,2), ImageIcon(ClassLoader.getSystemResource("images/NutDen.png")).scaled(1080, 524), 82, 233, 420, 505),
         Location("Old Tree Shack", mutableListOf(0, 3), ImageIcon(ClassLoader.getSystemResource("images/Map.png")).scaled(1080, 524), 111, 287, 75, 247),
         Location("Tree House", mutableListOf(0, 3, 4), ImageIcon(ClassLoader.getSystemResource("images/Map.png")).scaled(1080, 524), 321, 496, 205, 396),
         Location("Pine Tower", mutableListOf(1, 2, 4), ImageIcon(ClassLoader.getSystemResource("images/Map.png")).scaled(1080, 524), 578, 693, 74, 272),
         Location("Hole Home", mutableListOf(2, 3, 5), ImageIcon(ClassLoader.getSystemResource("images/Map.png")).scaled(1080, 524), 746, 921, 335, 463),
         Location("Cave Manor", mutableListOf(4), ImageIcon(ClassLoader.getSystemResource("images/Map.png")).scaled(1080, 524), 871, 1023, 74, 184)
     )
+    var isOnWorldMap = true
+
 
     var currentLocation = locations[0]
     var selectLocation = locations[0]
     var travelling = false
     var travelProgress:Double = 0.00
 
-    fun scorePoints(points: Int) {
-        score += points
-    }
-
-    fun resetScore() {
-        score = 0
-    }
-
-    fun maxScoreReached(): Boolean {
-        return score >= 5000
-    }
 }
 
 
@@ -71,7 +60,7 @@ class MainWindow(val app: App) {
     private val panel = JPanel().apply { layout = null }
 
     private val gameBackgroundLabel = JLabel()
-    private val backgroundImage = ImageIcon(ClassLoader.getSystemResource("images/Map.png")).scaled(1080, 524)
+    private val MapImage = ImageIcon(ClassLoader.getSystemResource("images/Map.png")).scaled(1080, 524)
     private val UIbackgroundLabel = JLabel()
     private val UIBackgroundImage = ImageIcon(ClassLoader.getSystemResource("images/UserInterfaceBackground.png")).scaled(1080, 202)
     private val locationMarker = JLabel()
@@ -83,6 +72,8 @@ class MainWindow(val app: App) {
     private var travelButton = JButton("Travel to")
     private var travelPopup = JLabel("Travelling...")
     private val travelTimer = Timer(10, null)
+
+    private var toggleLocationButton = JButton("Enter ${app.currentLocation.name}")
 
     init {
         setupLayout()
@@ -100,6 +91,7 @@ class MainWindow(val app: App) {
         locationName.setBounds(890, 550, 300, 30)
         travelButton.setBounds(890, 590, 100, 30)
         travelPopup.setBounds(890, 590, 100, 30)
+        toggleLocationButton.setBounds(890, 590, 180, 30)
 
         locationMarker.setBounds((app.selectLocation.coordXMin+app.selectLocation.coordXMax)/2-35, app.selectLocation.coordYMin-70, 70, 70)
         dealerLocation.setBounds((app.currentLocation.coordXMin+app.currentLocation.coordXMax)/2-35, app.currentLocation.coordYMax-70, 70, 70)
@@ -108,13 +100,14 @@ class MainWindow(val app: App) {
         panel.add(locationMarker)
         panel.add(locationName)
         panel.add(travelButton)
+        panel.add(toggleLocationButton)
         panel.add(travelPopup)
         panel.add(gameBackgroundLabel)
         panel.add(UIbackgroundLabel)
     }
 
     private fun setupStyles() {
-        gameBackgroundLabel.icon = backgroundImage
+        gameBackgroundLabel.icon = MapImage
         UIbackgroundLabel.icon = UIBackgroundImage
         locationMarker.icon = markerImage
         dealerLocation.icon = dealerIcon
@@ -135,26 +128,29 @@ class MainWindow(val app: App) {
     }
 
     private fun setupActions() {
-//      Handles selecting location by finding if location of click was in the area of a location
-        gameBackgroundLabel.addMouseListener( handleLocationClick())
+        gameBackgroundLabel.addMouseListener( handleMouseClick())
 
         travelButton.addActionListener{ handleTravelClick() }
+        toggleLocationButton.addActionListener{ handleLocationClick() }
+
         travelTimer.addActionListener{ handleTravelTween() }
     }
-
-    private fun handleLocationClick(): MouseListener {
+    //  ---------------------------------- MOUSE INPUT HANDLERS
+    private fun handleMouseClick(): MouseListener {
         return object : MouseAdapter() {
             override fun mouseClicked(e: MouseEvent) {
-                for (location in app.locations){
-                    if(e.x in location.coordXMin..location.coordXMax && e.y in location.coordYMin..location.coordYMax && !app.travelling){
-                        app.selectLocation = location
-                        updateUI()
+                if (app.isOnWorldMap){ // Blocks checking when in a location
+                    for (location in app.locations){ // Checks if click location is in bounding box of a location
+                        if(e.x in location.coordXMin..location.coordXMax && e.y in location.coordYMin..location.coordYMax && !app.travelling){
+                            app.selectLocation = location
+                            updateUI()
+                        }
                     }
                 }
             }
         }
     }
-
+    //  ---------------------------------- BUTTON INPUT HANDLERS
     private fun handleTravelClick() {
         app.travelling = true
         app.travelProgress = 0.00
@@ -162,39 +158,68 @@ class MainWindow(val app: App) {
         updateUI()
     }
 
+    private fun handleLocationClick(){
+        app.isOnWorldMap = !app.isOnWorldMap
+        updateUI()
+    }
+
+    //  ---------------------------------- TIMER HANDLERS
     private fun handleTravelTween() {
         val initialX = (app.currentLocation.coordXMin+app.currentLocation.coordXMax)/2-35
         val initialY = app.currentLocation.coordYMax-70
         val endX = (app.selectLocation.coordXMin+app.selectLocation.coordXMax)/2-35
         val endY = app.selectLocation.coordYMax-70
 
-        dealerLocation.setBounds((initialX + (endX - initialX) * app.travelProgress).toInt(), (initialY + (endY - initialY) * app.travelProgress).toInt(), 70, 70 )
+        // Handles
+        val dx = (endX - initialX).toDouble()
+        val dy = (endY - initialY).toDouble()
+        val dist = hypot(dx, dy)
+        val stepSize = 5
+        val journeySteps = dist / stepSize
 
+        app.travelProgress++
 
-        //Idk fix
-        app.travelProgress += hypot((initialX + (endX - initialX).toDouble()), (initialY + (endY - initialY).toDouble()))/30000
-
-        if (app.travelProgress >= 1.00){
+        if (app.travelProgress >= journeySteps) {
             travelTimer.stop()
             app.travelling = false
             app.currentLocation = app.selectLocation
             updateUI()
+        } else {
+            val newX = initialX + (dx / journeySteps) * app.travelProgress
+            val newY = initialY + (dy / journeySteps) * app.travelProgress
+
+            dealerLocation.setBounds(newX.toInt(), newY.toInt(), 70, 70 )
         }
     }
-
+    //  ---------------------------------- UPDATE FUNCTION
     fun updateUI() {
-        locationName.text = app.selectLocation.name
-        locationMarker.setBounds((app.selectLocation.coordXMin+app.selectLocation.coordXMax)/2-35, app.selectLocation.coordYMin-70, 70, 70)
-        dealerLocation.setBounds((app.currentLocation.coordXMin+app.currentLocation.coordXMax)/2-35, app.currentLocation.coordYMax-70, 70, 70)
+        if (app.isOnWorldMap) {
+            gameBackgroundLabel.icon = MapImage
+            locationName.text = app.selectLocation.name
+            toggleLocationButton.text = "Enter ${app.currentLocation.name}"
+            locationMarker.setBounds((app.selectLocation.coordXMin + app.selectLocation.coordXMax) / 2 - 35, app.selectLocation.coordYMin - 70, 70, 70)
+            dealerLocation.setBounds((app.currentLocation.coordXMin + app.currentLocation.coordXMax) / 2 - 35, app.currentLocation.coordYMax - 70, 70, 70)
 
-        if (app.locations.indexOf(app.selectLocation) in app.currentLocation.adjacentIndex){ travelButton.isVisible = true}
-        else { travelButton.isVisible = false }
+            dealerLocation.isVisible = true
+            locationMarker.isVisible = true
+            travelButton.isVisible = app.locations.indexOf(app.selectLocation) in app.currentLocation.adjacentIndex
 
-        if (app.travelling) {
-            travelPopup.isVisible = true
-            travelButton.isVisible = false
+            if (app.travelling) {
+                travelPopup.isVisible = true
+                travelButton.isVisible = false
+            } else { travelPopup.isVisible = false }
+
+            if (app.currentLocation == app.selectLocation) { toggleLocationButton.isVisible = true }
+            else { toggleLocationButton.isVisible = false }
+        } else {
+            dealerLocation.isVisible = false
+            locationMarker.isVisible = false
+            toggleLocationButton.text = "Exit ${app.currentLocation.name}"
+
+            gameBackgroundLabel.icon = app.currentLocation.backgroundImage
+
         }
-        else {travelPopup.isVisible = false}
+
 
     }
 

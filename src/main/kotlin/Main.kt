@@ -33,11 +33,11 @@ fun main() {
 class App {
     var locations = listOf( // Creates each location with required arguments
         Location("Nut Den", mutableListOf(1,2), ImageIcon(ClassLoader.getSystemResource("images/NutDen.png")).scaled(1080, 524), 82, 233, 420, 505),
-        Location("Old Tree Shack", mutableListOf(0, 3), ImageIcon(ClassLoader.getSystemResource("images/Map.png")).scaled(1080, 524), 111, 287, 75, 247),
-        Location("Tree House", mutableListOf(0, 3, 4), ImageIcon(ClassLoader.getSystemResource("images/Map.png")).scaled(1080, 524), 321, 496, 205, 396),
-        Location("Pine Tower", mutableListOf(1, 2, 4), ImageIcon(ClassLoader.getSystemResource("images/Map.png")).scaled(1080, 524), 578, 693, 74, 272),
-        Location("Hole Home", mutableListOf(2, 3, 5), ImageIcon(ClassLoader.getSystemResource("images/Map.png")).scaled(1080, 524), 746, 921, 335, 463),
-        Location("Cave Manor", mutableListOf(4), ImageIcon(ClassLoader.getSystemResource("images/Map.png")).scaled(1080, 524), 871, 1023, 74, 184)
+        Location("Old Tree Shack", mutableListOf(0, 3), ImageIcon(ClassLoader.getSystemResource("images/TreeShack.png")).scaled(1080, 524), 111, 287, 75, 247),
+        Location("Tree House", mutableListOf(0, 3, 4), ImageIcon(ClassLoader.getSystemResource("images/TreeHouse.png")).scaled(1080, 524), 321, 496, 205, 396),
+        Location("Pine Tower", mutableListOf(1, 2, 4), ImageIcon(ClassLoader.getSystemResource("images/PineTower.png")).scaled(1080, 524), 578, 693, 74, 272),
+        Location("Hole Home", mutableListOf(2, 3, 5), ImageIcon(ClassLoader.getSystemResource("images/HoleHome.png")).scaled(1080, 524), 746, 921, 335, 463),
+        Location("Cave Manor", mutableListOf(4), ImageIcon(ClassLoader.getSystemResource("images/CaveManor.png")).scaled(1080, 524), 871, 1023, 74, 184)
     )
     var isOnWorldMap = true
 
@@ -46,6 +46,10 @@ class App {
     var selectLocation = locations[0]
     var travelling = false
     var travelProgress:Double = 0.00
+
+    fun harvestAcorn(){
+
+    }
 
 }
 
@@ -67,6 +71,13 @@ class MainWindow(val app: App) {
     private val markerImage = ImageIcon(ClassLoader.getSystemResource("images/Marker.png")).scaled(70, 70)
     private val dealerLocation = JLabel()
     private val dealerIcon = ImageIcon(ClassLoader.getSystemResource("images/NutDealerIcon.png")).scaled(70, 70)
+
+    private val pots = mutableListOf<JButton>( JButton("1"), JButton("2"), JButton("3"), JButton("4"))
+
+    private val potEmptyImage = ImageIcon(ClassLoader.getSystemResource("images/potEmpty.png")).scaled(130, 285)
+    private val potWateredImage = ImageIcon(ClassLoader.getSystemResource("images/potWatered.png")).scaled(130, 285)
+    private val potGrownImage = ImageIcon(ClassLoader.getSystemResource("images/potGrown.png")).scaled(130, 285)
+    private val potReadyImage = ImageIcon(ClassLoader.getSystemResource("images/potReady.png")).scaled(130, 285)
 
     private var locationName = JLabel("Nut Den")
     private var travelButton = JButton("Travel to")
@@ -96,6 +107,15 @@ class MainWindow(val app: App) {
         locationMarker.setBounds((app.selectLocation.coordXMin+app.selectLocation.coordXMax)/2-35, app.selectLocation.coordYMin-70, 70, 70)
         dealerLocation.setBounds((app.currentLocation.coordXMin+app.currentLocation.coordXMax)/2-35, app.currentLocation.coordYMax-70, 70, 70)
 
+        pots[0].setBounds(80, 140, 130, 285)
+        pots[1].setBounds(210, 220, 130, 285)
+        pots[2].setBounds(340, 100, 130, 285)
+        pots[3].setBounds(470, 190, 130, 285)
+
+        for (pot in pots){
+            panel.add(pot)
+        }
+
         panel.add(dealerLocation)
         panel.add(locationMarker)
         panel.add(locationName)
@@ -111,6 +131,14 @@ class MainWindow(val app: App) {
         UIbackgroundLabel.icon = UIBackgroundImage
         locationMarker.icon = markerImage
         dealerLocation.icon = dealerIcon
+
+        for (pot in pots){
+            pot.icon = potEmptyImage
+            pot.isBorderPainted = false
+            pot.isContentAreaFilled = false
+            pot.isFocusPainted = false
+
+        }
 
         locationName.font = Font(Font.SANS_SERIF, Font.BOLD, 20)
         locationName.foreground = Color.BLACK
@@ -134,7 +162,12 @@ class MainWindow(val app: App) {
         toggleLocationButton.addActionListener{ handleLocationClick() }
 
         travelTimer.addActionListener{ handleTravelTween() }
+
+        for (i in pots.indices){
+            pots[i].addActionListener{ handlePotClick(i) }
+        }
     }
+
     //  ---------------------------------- MOUSE INPUT HANDLERS
     private fun handleMouseClick(): MouseListener {
         return object : MouseAdapter() {
@@ -150,6 +183,7 @@ class MainWindow(val app: App) {
             }
         }
     }
+
     //  ---------------------------------- BUTTON INPUT HANDLERS
     private fun handleTravelClick() {
         app.travelling = true
@@ -163,6 +197,13 @@ class MainWindow(val app: App) {
         updateUI()
     }
 
+    private fun handlePotClick(potID: Int){
+        pots[potID].icon = potWateredImage
+        val acorntimer = Timer(1000, null)
+        acorntimer.addActionListener{ growAcorn(potID) }
+        acorntimer.start()
+    }
+
     //  ---------------------------------- TIMER HANDLERS
     private fun handleTravelTween() {
         val initialX = (app.currentLocation.coordXMin+app.currentLocation.coordXMax)/2-35
@@ -174,7 +215,7 @@ class MainWindow(val app: App) {
         val dx = (endX - initialX).toDouble()
         val dy = (endY - initialY).toDouble()
         val dist = hypot(dx, dy)
-        val stepSize = 5
+        val stepSize = 2
         val journeySteps = dist / stepSize
 
         app.travelProgress++
@@ -191,6 +232,13 @@ class MainWindow(val app: App) {
             dealerLocation.setBounds(newX.toInt(), newY.toInt(), 70, 70 )
         }
     }
+
+    private fun growAcorn( potID: Int ){
+        if (pots[potID].icon == potGrownImage || pots[potID].icon == potReadyImage){
+            pots[potID].icon = potReadyImage
+        } else { pots[potID].icon = potGrownImage }
+    }
+
     //  ---------------------------------- UPDATE FUNCTION
     fun updateUI() {
         if (app.isOnWorldMap) {
@@ -203,6 +251,10 @@ class MainWindow(val app: App) {
             dealerLocation.isVisible = true
             locationMarker.isVisible = true
             travelButton.isVisible = app.locations.indexOf(app.selectLocation) in app.currentLocation.adjacentIndex
+
+            for (pot in pots){
+                pot.isVisible = false
+            }
 
             if (app.travelling) {
                 travelPopup.isVisible = true
@@ -218,9 +270,14 @@ class MainWindow(val app: App) {
 
             gameBackgroundLabel.icon = app.currentLocation.backgroundImage
 
+            when (app.currentLocation){
+                 app.locations[0] -> {
+                     for (pot in pots){
+                         pot.isVisible = true
+                     }
+                 }
+            }
         }
-
-
     }
 
     fun show() {

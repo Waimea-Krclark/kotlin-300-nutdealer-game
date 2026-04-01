@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="468a5237-3774-4be9-90ea-ea5da4cab833" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/src/main/resources/images/CaveManor.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/resources/images/HoleHome.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/resources/images/PineTower.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/resources/images/TreeHouse.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/resources/images/TreeShack.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/kotlin/Main.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/Main.kt" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="ExternalProjectsData">
+    <projectState path="$PROJECT_DIR$">
+      <ProjectState />
+    </projectState>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;,
+    &quot;assignee&quot;: &quot;Waimea-Krclark&quot;
+  }
+}</component>
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/Waimea-Krclark/kotlin-300-nutdealer-game.git&quot;,
+    &quot;accountId&quot;: &quot;dc16d2af-da75-4f36-9d81-0d59239ac424&quot;
+  }
+}</component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 3
+}</component>
+  <component name="ProjectId" id="3B65jBwXXupRhrrDenwbEB8DrNF" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;Gradle.Build kotlin-300-nutdealer-game.executor&quot;: &quot;Run&quot;,
+    &quot;Kotlin.MainKt.executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
+    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/krclark/OneDrive - Waimea College/Documents/___Year 13/Digital Tech/Kotlin/kotlin-300-nutdealer-game/src/main/resources/images&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;reference.settingsdialog.project.gradle&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  }
+}</component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\Users\krclark\OneDrive - Waimea College\Documents\___Year 13\Digital Tech\Kotlin\kotlin-300-nutdealer-game\src\main\resources\images" />
+      <recent name="C:\Users\krclark\OneDrive - Waimea College\Documents\___Year 13\Digital Tech\Kotlin\kotlin-300-nutdealer-game\src\main\resources\Images" />
+      <recent name="C:\Users\krclark\OneDrive - Waimea College\Documents\___Year 13\Digital Tech\Kotlin\kotlin-300-nutdealer-game" />
+    </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\kc481\OneDrive - Waimea College\Documents\___Year 13\Digital Tech\Kotlin\kotlin-300-nutdealer-game\src\main\resources\images" />
+      <recent name="C:\Users\krclark\OneDrive - Waimea College\Documents\___Year 13\Digital Tech\Kotlin\kotlin-300-nutdealer-game\src\main\resources\images" />
+      <recent name="C:\Users\krclark\OneDrive - Waimea College\Documents\___Year 13\Digital Tech\Kotlin\kotlin-300-nutdealer-game\docs\task\images" />
+    </key>
+  </component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-jdk-9823dce3aa75-125ca727e0f0-intellij.indexing.shared.core-IU-243.23654.189" />
+        <option value="bundled-js-predefined-d6986cc7102b-822845ee3bb5-JavaScript-IU-243.23654.189" />
+      </set>
+    </attachedChunks>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="468a5237-3774-4be9-90ea-ea5da4cab833" name="Changes" comment="" />
+      <created>1773796813664</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1773796813664</updated>
+      <workItem from="1773796814801" duration="2697000" />
+      <workItem from="1773950491795" duration="3372000" />
+      <workItem from="1773956642510" duration="1103000" />
+      <workItem from="1773962105588" duration="73000" />
+      <workItem from="1774218306028" duration="3579000" />
+      <workItem from="1774222313906" duration="5507000" />
+      <workItem from="1774235074991" duration="301000" />
+      <workItem from="1774302457763" duration="201000" />
+      <workItem from="1774388668224" duration="658000" />
+      <workItem from="1774394953200" duration="4899000" />
+      <workItem from="1774400955052" duration="3668000" />
+      <workItem from="1774555415481" duration="3453000" />
+      <workItem from="1774565348384" duration="1676000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+</project>

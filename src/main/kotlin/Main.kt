@@ -41,16 +41,19 @@ class App {
     )
     var isOnWorldMap = true
 
-
     var currentLocation = locations[0]
     var selectLocation = locations[0]
     var travelling = false
     var travelProgress:Double = 0.00
 
-    fun harvestAcorn(){
+    var acorns = 0
 
+    fun harvestAcorn(){
+        acorns++
     }
 
+    var instancedSeedPacket = JLabel()
+    var dragtype = ""
 }
 
 
@@ -61,7 +64,7 @@ class App {
  */
 class MainWindow(val app: App) {
     val frame = JFrame("Nutdealer")
-    private val panel = JPanel().apply { layout = null }
+    private val panel = JLayeredPane().apply { layout = null }
 
     private val gameBackgroundLabel = JLabel()
     private val MapImage = ImageIcon(ClassLoader.getSystemResource("images/Map.png")).scaled(1080, 524)
@@ -72,19 +75,33 @@ class MainWindow(val app: App) {
     private val dealerLocation = JLabel()
     private val dealerIcon = ImageIcon(ClassLoader.getSystemResource("images/NutDealerIcon.png")).scaled(70, 70)
 
-    private val pots = mutableListOf<JButton>( JButton("1"), JButton("2"), JButton("3"), JButton("4"))
+    private val pots = mutableListOf<JLabel>(JLabel("1"), JLabel("2"), JLabel("3"), JLabel("4"))
 
-    private val potEmptyImage = ImageIcon(ClassLoader.getSystemResource("images/potEmpty.png")).scaled(130, 285)
-    private val potWateredImage = ImageIcon(ClassLoader.getSystemResource("images/potWatered.png")).scaled(130, 285)
-    private val potGrownImage = ImageIcon(ClassLoader.getSystemResource("images/potGrown.png")).scaled(130, 285)
-    private val potReadyImage = ImageIcon(ClassLoader.getSystemResource("images/potReady.png")).scaled(130, 285)
+    private val potImages = mutableListOf(
+        ImageIcon(ClassLoader.getSystemResource("images/potEmpty.png")).scaled(130, 285),
+        ImageIcon(ClassLoader.getSystemResource("images/potSeed.png")).scaled(130, 285),
+        ImageIcon(ClassLoader.getSystemResource("images/potWatered.png")).scaled(130, 285),
+        ImageIcon(ClassLoader.getSystemResource("images/potWatered.png")).scaled(130, 285),
+        ImageIcon(ClassLoader.getSystemResource("images/potGrowing.png")).scaled(130, 285),
+        ImageIcon(ClassLoader.getSystemResource("images/potGrown.png")).scaled(130, 285),
+        ImageIcon(ClassLoader.getSystemResource("images/potReady.png")).scaled(130, 285)
+    )
+
+    private val seedSpawner = JLabel()
+    private val seedImage = ImageIcon(ClassLoader.getSystemResource("images/SeedPack.png")).scaled(100, 100)
+    private val waterSpawner = JLabel()
+    private val waterImage = ImageIcon(ClassLoader.getSystemResource("images/WaterDrop.png")).scaled(100, 100)
 
     private var locationName = JLabel("Nut Den")
     private var travelButton = JButton("Travel to")
     private var travelPopup = JLabel("Travelling...")
     private val travelTimer = Timer(10, null)
+    private val seedDragTimer = Timer(10, null)
+
 
     private var toggleLocationButton = JButton("Enter ${app.currentLocation.name}")
+
+    private val nutAmount = JLabel(app.acorns.toString())
 
     init {
         setupLayout()
@@ -99,13 +116,19 @@ class MainWindow(val app: App) {
 
         gameBackgroundLabel.setBounds(0, 0, 1080, 524)
         UIbackgroundLabel.setBounds(0, 524, 1080, 202)
+
         locationName.setBounds(890, 550, 300, 30)
         travelButton.setBounds(890, 590, 100, 30)
         travelPopup.setBounds(890, 590, 100, 30)
         toggleLocationButton.setBounds(890, 590, 180, 30)
+        nutAmount.setBounds(500, 640, 100, 100)
 
         locationMarker.setBounds((app.selectLocation.coordXMin+app.selectLocation.coordXMax)/2-35, app.selectLocation.coordYMin-70, 70, 70)
         dealerLocation.setBounds((app.currentLocation.coordXMin+app.currentLocation.coordXMax)/2-35, app.currentLocation.coordYMax-70, 70, 70)
+
+        seedSpawner.setBounds(430, 20, 100, 100)
+        waterSpawner.setBounds(550, 20, 100, 100)
+
 
         pots[0].setBounds(80, 140, 130, 285)
         pots[1].setBounds(210, 220, 130, 285)
@@ -113,17 +136,22 @@ class MainWindow(val app: App) {
         pots[3].setBounds(470, 190, 130, 285)
 
         for (pot in pots){
-            panel.add(pot)
+            panel.add(pot, JLayeredPane.DEFAULT_LAYER)
         }
 
-        panel.add(dealerLocation)
-        panel.add(locationMarker)
-        panel.add(locationName)
-        panel.add(travelButton)
-        panel.add(toggleLocationButton)
-        panel.add(travelPopup)
-        panel.add(gameBackgroundLabel)
-        panel.add(UIbackgroundLabel)
+        panel.add(waterSpawner, JLayeredPane.DEFAULT_LAYER)
+        panel.add(seedSpawner, JLayeredPane.DEFAULT_LAYER)
+        panel.add(nutAmount, JLayeredPane.DEFAULT_LAYER)
+        panel.add(dealerLocation, JLayeredPane.DEFAULT_LAYER)
+        panel.add(locationMarker, JLayeredPane.DEFAULT_LAYER)
+        panel.add(locationName, JLayeredPane.DEFAULT_LAYER)
+        panel.add(travelButton, JLayeredPane.DEFAULT_LAYER)
+        panel.add(toggleLocationButton, JLayeredPane.DEFAULT_LAYER)
+        panel.add(travelPopup, JLayeredPane.DEFAULT_LAYER)
+
+//      Background Images, all elements layer over this
+        panel.add(gameBackgroundLabel,JLayeredPane.DEFAULT_LAYER-1)
+        panel.add(UIbackgroundLabel, JLayeredPane.DEFAULT_LAYER-1)
     }
 
     private fun setupStyles() {
@@ -133,15 +161,17 @@ class MainWindow(val app: App) {
         dealerLocation.icon = dealerIcon
 
         for (pot in pots){
-            pot.icon = potEmptyImage
-            pot.isBorderPainted = false
-            pot.isContentAreaFilled = false
-            pot.isFocusPainted = false
-
+            pot.icon = potImages[0]
         }
+
+        seedSpawner.icon = seedImage
+        waterSpawner.icon = waterImage
 
         locationName.font = Font(Font.SANS_SERIF, Font.BOLD, 20)
         locationName.foreground = Color.BLACK
+
+        nutAmount.font = Font(Font.SANS_SERIF, Font.BOLD, 20)
+        nutAmount.foreground = Color.BLACK
 
         travelPopup.font = Font(Font.SANS_SERIF, Font.BOLD, 13)
         travelPopup.foreground = Color.BLACK
@@ -156,20 +186,21 @@ class MainWindow(val app: App) {
     }
 
     private fun setupActions() {
-        gameBackgroundLabel.addMouseListener( handleMouseClick())
+        gameBackgroundLabel.addMouseListener( handleBackgroundClick())
 
         travelButton.addActionListener{ handleTravelClick() }
         toggleLocationButton.addActionListener{ handleLocationClick() }
 
         travelTimer.addActionListener{ handleTravelTween() }
+        seedDragTimer.addActionListener{ handleDrag() }
 
         for (i in pots.indices){
-            pots[i].addActionListener{ handlePotClick(i) }
+            pots[i].addMouseListener(handleMousePot(i))
         }
     }
 
     //  ---------------------------------- MOUSE INPUT HANDLERS
-    private fun handleMouseClick(): MouseListener {
+    private fun handleBackgroundClick(): MouseListener {
         return object : MouseAdapter() {
             override fun mouseClicked(e: MouseEvent) {
                 if (app.isOnWorldMap){ // Blocks checking when in a location
@@ -180,6 +211,42 @@ class MainWindow(val app: App) {
                         }
                     }
                 }
+            }
+
+            override fun mousePressed(e: MouseEvent?) {
+                println("\n\n\n\n\n\n\n\n\nMouseDown")
+                if (!app.isOnWorldMap){
+                    if (seedSpawner.bounds.contains(panel.mousePosition)){
+                        app.dragtype = "seed"
+                        handleDraggableClick(seedImage, 430)
+                    } else if (waterSpawner.bounds.contains(panel.mousePosition)){
+                        app.dragtype = "water"
+                        handleDraggableClick(waterImage,550)
+                    }
+                }
+            }
+
+            override fun mouseReleased(e: MouseEvent?) {
+                println("MouseUp")
+                if (!app.isOnWorldMap){
+                    if (app.dragtype != ""){
+                        exitSeedDrag()
+                        for (pot in pots){
+                            if (pot.bounds.contains(panel.mousePosition)){
+                                handlePotClick(pots.indexOf(pot), app.dragtype)
+                            }
+                        }
+                        app.dragtype = ""
+                    }
+                }
+            }
+        }
+    }
+
+    private fun handleMousePot(i:Int): MouseListener {
+        return object : MouseAdapter() {
+            override fun mouseClicked(e: MouseEvent) {
+                handlePotClick(i,"mouse")
             }
         }
     }
@@ -197,11 +264,58 @@ class MainWindow(val app: App) {
         updateUI()
     }
 
-    private fun handlePotClick(potID: Int){
-        pots[potID].icon = potWateredImage
-        val acorntimer = Timer(1000, null)
-        acorntimer.addActionListener{ growAcorn(potID) }
-        acorntimer.start()
+    private fun handleDraggableClick(Image:ImageIcon, spawnX:Int){
+        app.instancedSeedPacket.setBounds(spawnX, 20, 100, 100)
+        panel.add(app.instancedSeedPacket, JLayeredPane.DEFAULT_LAYER+1)
+        app.instancedSeedPacket.icon = Image
+        panel.revalidate()
+        panel.repaint()
+        seedDragTimer.start()
+
+    }
+
+    private fun handleDrag(){
+        val mouseLoc = panel.mousePosition
+        try {
+            app.instancedSeedPacket.setBounds(mouseLoc.x - seedImage.iconWidth / 2, mouseLoc.y - seedImage.iconWidth / 2, 100, 100)
+        } catch (e:NullPointerException){
+            exitSeedDrag()
+        }
+    }
+
+    private fun exitSeedDrag(){
+        panel.remove(app.instancedSeedPacket)
+        panel.revalidate()
+        panel.repaint()
+        seedDragTimer.stop()
+    }
+
+    private fun handlePotClick(potID: Int,type:String){
+        when(type){
+            "seed"->{
+                if (pots[potID].icon == potImages[0]){
+                    pots[potID].icon = potImages[1]
+                }
+            }
+            "water"->{
+                if (pots[potID].icon == potImages[1]) {
+                    pots[potID].icon = potImages[2]
+                    val acorntimer = Timer(1000, null)
+                    if (!acorntimer.isRunning){
+                        pots[potID].icon = potImages[3]
+                        acorntimer.addActionListener{ potInteract(potID, acorntimer) }
+                        acorntimer.restart()
+                    }
+                }
+            }
+            else ->{
+                if (pots[potID].icon == potImages.last()){
+                    pots[potID].icon = potImages[0]
+                    app.harvestAcorn()
+                    updateUI()
+                }
+            }
+        }
     }
 
     //  ---------------------------------- TIMER HANDLERS
@@ -233,10 +347,12 @@ class MainWindow(val app: App) {
         }
     }
 
-    private fun growAcorn( potID: Int ){
-        if (pots[potID].icon == potGrownImage || pots[potID].icon == potReadyImage){
-            pots[potID].icon = potReadyImage
-        } else { pots[potID].icon = potGrownImage }
+    private fun potInteract( potID: Int , timer: Timer){
+        val currentIndex = potImages.indexOf(pots[potID].icon)
+        pots[potID].icon = potImages[currentIndex+1]
+        if (pots[potID].icon == potImages.last()){
+            timer.stop()
+        }
     }
 
     //  ---------------------------------- UPDATE FUNCTION
@@ -252,6 +368,8 @@ class MainWindow(val app: App) {
             locationMarker.isVisible = true
             travelButton.isVisible = app.locations.indexOf(app.selectLocation) in app.currentLocation.adjacentIndex
 
+            seedSpawner.isVisible = false
+            waterSpawner.isVisible = false
             for (pot in pots){
                 pot.isVisible = false
             }
@@ -275,9 +393,13 @@ class MainWindow(val app: App) {
                      for (pot in pots){
                          pot.isVisible = true
                      }
+                     seedSpawner.isVisible = true
+                     waterSpawner.isVisible = true
                  }
             }
         }
+
+        nutAmount.text = app.acorns.toString()
     }
 
     fun show() {

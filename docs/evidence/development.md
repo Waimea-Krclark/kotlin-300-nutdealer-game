@@ -26,17 +26,17 @@ Added locations class and created each location with coordinates for a bounding 
 
 ---
 
-## Date: xx/xx/20xx
+## Date: 27/01/20xx
 
-Example description and notes. Example description and notes. Example description and notes. Example description and notes. Example description and notes. Example description and notes.
+added animated travelling to locations, adjacent pathing and graphics for each location
 
 ![example.png](screenshots/example.png)
 
 ---
 
-## Date: xx/xx/20xx
+## Date: 31/xx/20xx
 
-Example description and notes. Example description and notes. Example description and notes. Example description and notes. Example description and notes. Example description and notes.
+prototype nut pots and growing/collecting
 
 ![example.png](screenshots/example.png)
 

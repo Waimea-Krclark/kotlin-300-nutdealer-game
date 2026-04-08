@@ -4,11 +4,7 @@ by Kieran Clark
 
 ## Project Description
 
-**PLACE YOUR PROJECT DESCRIPTION HERE**
-**PLACE YOUR PROJECT DESCRIPTION HERE**
-**PLACE YOUR PROJECT DESCRIPTION HERE**
-**PLACE YOUR PROJECT DESCRIPTION HERE**
-**PLACE YOUR PROJECT DESCRIPTION HERE**
+A game about growing and dealing illegal nuts to your squirrel customers, trying to keep those customers happy and your reputation up without it getting too high that the nut police find out about your business.
 
 ---
 

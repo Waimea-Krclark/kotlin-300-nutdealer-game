@@ -26,7 +26,7 @@ Added locations class and created each location with coordinates for a bounding 
 
 ---
 
-## Date: 27/01/20xx
+## Date: 27/03/2026
 
 added animated travelling to locations, adjacent pathing and graphics for each location
 
@@ -34,7 +34,7 @@ added animated travelling to locations, adjacent pathing and graphics for each l
 
 ---
 
-## Date: 31/xx/20xx
+## Date: 31/03/2026
 
 prototype nut pots and growing/collecting
 
@@ -42,9 +42,9 @@ prototype nut pots and growing/collecting
 
 ---
 
-## Date: xx/xx/20xx
+## Date: 12/04/2026
 
-Example description and notes. Example description and notes. Example description and notes. Example description and notes. Example description and notes. Example description and notes.
+added starter order logic, customers appearing at locations then notifications
 
 ![example.png](screenshots/example.png)
 

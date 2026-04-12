@@ -7,10 +7,13 @@ import java.awt.event.MouseEvent
 import java.awt.event.MouseListener
 import javax.swing.*
 import kotlin.math.hypot
-import kotlin.math.sqrt
 
+
+//CONSANTS
+const val MAP_ICON_SIZE = 70
 
 fun ImageIcon.scaled(width: Int, height: Int): ImageIcon = ImageIcon(image.getScaledInstance(width, height, Image.SCALE_SMOOTH))
+
 /**
  * Application entry point
  */
@@ -27,8 +30,7 @@ fun main() {
 /**
  * Manage app state
  *
- * @property name the user's name
- * @property score the points earned
+ *
  */
 class App {
     var locations = listOf( // Creates each location with required arguments
@@ -47,13 +49,16 @@ class App {
     var travelProgress:Double = 0.00
 
     var acorns = 0
+    var globalDifficultyMultiplier = 1.00
 
     fun harvestAcorn(){
         acorns++
     }
 
-    var instancedSeedPacket = JLabel()
+    var instancedDragObject = JLabel()
     var dragtype = ""
+
+    val debugCustomer = locations[1].createOrder(globalDifficultyMultiplier)
 }
 
 
@@ -66,16 +71,22 @@ class MainWindow(val app: App) {
     val frame = JFrame("Nutdealer")
     private val panel = JLayeredPane().apply { layout = null }
 
+    //Constant Elements
     private val gameBackgroundLabel = JLabel()
-    private val MapImage = ImageIcon(ClassLoader.getSystemResource("images/Map.png")).scaled(1080, 524)
+    private val mapImage = ImageIcon(ClassLoader.getSystemResource("images/Map.png")).scaled(1080, 524)
     private val UIbackgroundLabel = JLabel()
     private val UIBackgroundImage = ImageIcon(ClassLoader.getSystemResource("images/UserInterfaceBackground.png")).scaled(1080, 202)
-    private val locationMarker = JLabel()
-    private val markerImage = ImageIcon(ClassLoader.getSystemResource("images/Marker.png")).scaled(70, 70)
-    private val dealerLocation = JLabel()
-    private val dealerIcon = ImageIcon(ClassLoader.getSystemResource("images/NutDealerIcon.png")).scaled(70, 70)
 
-    private val pots = mutableListOf<JLabel>(JLabel("1"), JLabel("2"), JLabel("3"), JLabel("4"))
+    //World Map Elements
+    private val locationMarker = JLabel()
+    private val markerImage = ImageIcon(ClassLoader.getSystemResource("images/Marker.png")).scaled(MAP_ICON_SIZE, MAP_ICON_SIZE)
+    private val dealerLocation = JLabel()
+    private val dealerIcon = ImageIcon(ClassLoader.getSystemResource("images/NutDealerIcon.png")).scaled(MAP_ICON_SIZE, MAP_ICON_SIZE)
+
+    //Location contextual Elements
+
+    //Nut Den
+    private val pots = mutableListOf(JLabel("1"), JLabel("2"), JLabel("3"), JLabel("4"))
 
     private val potImages = mutableListOf(
         ImageIcon(ClassLoader.getSystemResource("images/potEmpty.png")).scaled(130, 285),
@@ -92,16 +103,24 @@ class MainWindow(val app: App) {
     private val waterSpawner = JLabel()
     private val waterImage = ImageIcon(ClassLoader.getSystemResource("images/WaterDrop.png")).scaled(100, 100)
 
+    //Other Location
+    private val customerElement = JLabel()
+
+    //User Interface
+
+    //Context Actions
     private var locationName = JLabel("Nut Den")
     private var travelButton = JButton("Travel to")
     private var travelPopup = JLabel("Travelling...")
+    private var toggleLocationButton = JButton("Enter ${app.currentLocation.name}")
+
+    //Stats
+    private val nutAmount = JLabel(app.acorns.toString())
+
+    //Timers
     private val travelTimer = Timer(10, null)
     private val seedDragTimer = Timer(10, null)
 
-
-    private var toggleLocationButton = JButton("Enter ${app.currentLocation.name}")
-
-    private val nutAmount = JLabel(app.acorns.toString())
 
     init {
         setupLayout()
@@ -114,21 +133,25 @@ class MainWindow(val app: App) {
     private fun setupLayout() {
         panel.preferredSize = java.awt.Dimension(1080, 726)
 
+        //Background Elements
         gameBackgroundLabel.setBounds(0, 0, 1080, 524)
         UIbackgroundLabel.setBounds(0, 524, 1080, 202)
 
+        //UI Elements
         locationName.setBounds(890, 550, 300, 30)
         travelButton.setBounds(890, 590, 100, 30)
         travelPopup.setBounds(890, 590, 100, 30)
         toggleLocationButton.setBounds(890, 590, 180, 30)
         nutAmount.setBounds(500, 640, 100, 100)
 
-        locationMarker.setBounds((app.selectLocation.coordXMin+app.selectLocation.coordXMax)/2-35, app.selectLocation.coordYMin-70, 70, 70)
-        dealerLocation.setBounds((app.currentLocation.coordXMin+app.currentLocation.coordXMax)/2-35, app.currentLocation.coordYMax-70, 70, 70)
+        //Graphical Elements
+        locationMarker.setBounds((app.selectLocation.coordXMin+app.selectLocation.coordXMax)-MAP_ICON_SIZE, app.selectLocation.coordYMin-MAP_ICON_SIZE, MAP_ICON_SIZE, MAP_ICON_SIZE)
+        dealerLocation.setBounds((app.currentLocation.coordXMin+app.currentLocation.coordXMax)-MAP_ICON_SIZE, app.currentLocation.coordYMax-MAP_ICON_SIZE, MAP_ICON_SIZE, MAP_ICON_SIZE)
+        customerElement.setBounds(500, 40, 484, 484)
 
+        //Nut Den Elements
         seedSpawner.setBounds(430, 20, 100, 100)
         waterSpawner.setBounds(550, 20, 100, 100)
-
 
         pots[0].setBounds(80, 140, 130, 285)
         pots[1].setBounds(210, 220, 130, 285)
@@ -139,6 +162,8 @@ class MainWindow(val app: App) {
             panel.add(pot, JLayeredPane.DEFAULT_LAYER)
         }
 
+        // Add all elements to screen
+        panel.add(customerElement, JLayeredPane.DEFAULT_LAYER)
         panel.add(waterSpawner, JLayeredPane.DEFAULT_LAYER)
         panel.add(seedSpawner, JLayeredPane.DEFAULT_LAYER)
         panel.add(nutAmount, JLayeredPane.DEFAULT_LAYER)
@@ -149,13 +174,13 @@ class MainWindow(val app: App) {
         panel.add(toggleLocationButton, JLayeredPane.DEFAULT_LAYER)
         panel.add(travelPopup, JLayeredPane.DEFAULT_LAYER)
 
-//      Background Images, all elements layer over this
+        //Background Images, all elements layer over this
         panel.add(gameBackgroundLabel,JLayeredPane.DEFAULT_LAYER-1)
         panel.add(UIbackgroundLabel, JLayeredPane.DEFAULT_LAYER-1)
     }
 
     private fun setupStyles() {
-        gameBackgroundLabel.icon = MapImage
+        gameBackgroundLabel.icon = mapImage
         UIbackgroundLabel.icon = UIBackgroundImage
         locationMarker.icon = markerImage
         dealerLocation.icon = dealerIcon
@@ -214,7 +239,6 @@ class MainWindow(val app: App) {
             }
 
             override fun mousePressed(e: MouseEvent?) {
-                println("\n\n\n\n\n\n\n\n\nMouseDown")
                 if (!app.isOnWorldMap){
                     if (seedSpawner.bounds.contains(panel.mousePosition)){
                         app.dragtype = "seed"
@@ -227,7 +251,6 @@ class MainWindow(val app: App) {
             }
 
             override fun mouseReleased(e: MouseEvent?) {
-                println("MouseUp")
                 if (!app.isOnWorldMap){
                     if (app.dragtype != ""){
                         exitSeedDrag()
@@ -264,10 +287,10 @@ class MainWindow(val app: App) {
         updateUI()
     }
 
-    private fun handleDraggableClick(Image:ImageIcon, spawnX:Int){
-        app.instancedSeedPacket.setBounds(spawnX, 20, 100, 100)
-        panel.add(app.instancedSeedPacket, JLayeredPane.DEFAULT_LAYER+1)
-        app.instancedSeedPacket.icon = Image
+    private fun handleDraggableClick(image:ImageIcon, spawnX:Int){
+        app.instancedDragObject.setBounds(spawnX, 20, 100, 100)
+        panel.add(app.instancedDragObject, JLayeredPane.DEFAULT_LAYER+1)
+        app.instancedDragObject.icon = image
         panel.revalidate()
         panel.repaint()
         seedDragTimer.start()
@@ -277,14 +300,14 @@ class MainWindow(val app: App) {
     private fun handleDrag(){
         val mouseLoc = panel.mousePosition
         try {
-            app.instancedSeedPacket.setBounds(mouseLoc.x - seedImage.iconWidth / 2, mouseLoc.y - seedImage.iconWidth / 2, 100, 100)
+            app.instancedDragObject.setBounds(mouseLoc.x - seedImage.iconWidth / 2, mouseLoc.y - seedImage.iconWidth / 2, 100, 100)
         } catch (e:NullPointerException){
             exitSeedDrag()
         }
     }
 
     private fun exitSeedDrag(){
-        panel.remove(app.instancedSeedPacket)
+        panel.remove(app.instancedDragObject)
         panel.revalidate()
         panel.repaint()
         seedDragTimer.stop()
@@ -320,10 +343,10 @@ class MainWindow(val app: App) {
 
     //  ---------------------------------- TIMER HANDLERS
     private fun handleTravelTween() {
-        val initialX = (app.currentLocation.coordXMin+app.currentLocation.coordXMax)/2-35
-        val initialY = app.currentLocation.coordYMax-70
-        val endX = (app.selectLocation.coordXMin+app.selectLocation.coordXMax)/2-35
-        val endY = app.selectLocation.coordYMax-70
+        val initialX = (app.currentLocation.coordXMin+app.currentLocation.coordXMax)/2-(MAP_ICON_SIZE/2)
+        val initialY = app.currentLocation.coordYMax-MAP_ICON_SIZE
+        val endX = (app.selectLocation.coordXMin+app.selectLocation.coordXMax)/2-(MAP_ICON_SIZE/2)
+        val endY = app.selectLocation.coordYMax-MAP_ICON_SIZE
 
         // Handles
         val dx = (endX - initialX).toDouble()
@@ -343,7 +366,7 @@ class MainWindow(val app: App) {
             val newX = initialX + (dx / journeySteps) * app.travelProgress
             val newY = initialY + (dy / journeySteps) * app.travelProgress
 
-            dealerLocation.setBounds(newX.toInt(), newY.toInt(), 70, 70 )
+            dealerLocation.setBounds(newX.toInt(), newY.toInt(), MAP_ICON_SIZE, MAP_ICON_SIZE )
         }
     }
 
@@ -357,13 +380,15 @@ class MainWindow(val app: App) {
 
     //  ---------------------------------- UPDATE FUNCTION
     fun updateUI() {
+        println("hello")
         if (app.isOnWorldMap) {
-            gameBackgroundLabel.icon = MapImage
+            gameBackgroundLabel.icon = mapImage
             locationName.text = app.selectLocation.name
             toggleLocationButton.text = "Enter ${app.currentLocation.name}"
-            locationMarker.setBounds((app.selectLocation.coordXMin + app.selectLocation.coordXMax) / 2 - 35, app.selectLocation.coordYMin - 70, 70, 70)
-            dealerLocation.setBounds((app.currentLocation.coordXMin + app.currentLocation.coordXMax) / 2 - 35, app.currentLocation.coordYMax - 70, 70, 70)
+            locationMarker.setBounds((app.selectLocation.coordXMin+app.selectLocation.coordXMax)/2-(MAP_ICON_SIZE/2), app.selectLocation.coordYMin-MAP_ICON_SIZE, MAP_ICON_SIZE, MAP_ICON_SIZE)
+            dealerLocation.setBounds((app.currentLocation.coordXMin+app.currentLocation.coordXMax)/2-(MAP_ICON_SIZE/2), app.currentLocation.coordYMax-MAP_ICON_SIZE, MAP_ICON_SIZE, MAP_ICON_SIZE)
 
+            customerElement.isVisible = false
             dealerLocation.isVisible = true
             locationMarker.isVisible = true
             travelButton.isVisible = app.locations.indexOf(app.selectLocation) in app.currentLocation.adjacentIndex
@@ -384,9 +409,13 @@ class MainWindow(val app: App) {
         } else {
             dealerLocation.isVisible = false
             locationMarker.isVisible = false
+
             toggleLocationButton.text = "Exit ${app.currentLocation.name}"
 
             gameBackgroundLabel.icon = app.currentLocation.backgroundImage
+
+            customerElement.isVisible = true
+            customerElement.icon = app.currentLocation.currentOrder?.customerIcon
 
             when (app.currentLocation){
                  app.locations[0] -> {
@@ -408,5 +437,40 @@ class MainWindow(val app: App) {
 }
 
 class Location(val name: String, val adjacentIndex: MutableList<Int>, val backgroundImage: ImageIcon, val coordXMin: Int, val coordXMax: Int, val coordYMin: Int, val coordYMax: Int) {
+    var currentOrder: Order? = null
 
+    fun createOrder(difficultyMultiplier:Double){
+        currentOrder = currentOrder ?: Order(difficultyMultiplier)
+    }
+}
+
+class Order(difficultyMultiplier:Double) {
+    val customerIcon = getIcon()
+    val customerName = getName()
+
+    fun getIcon():ImageIcon {
+        val customerImages = listOf(
+            ImageIcon(ClassLoader.getSystemResource("images/Customer1.png")).scaled(484, 484),
+            ImageIcon(ClassLoader.getSystemResource("images/Customer2.png")).scaled(484, 484),
+            ImageIcon(ClassLoader.getSystemResource("images/Customer3.png")).scaled(484, 484),
+            ImageIcon(ClassLoader.getSystemResource("images/Customer4.png")).scaled(484, 484),
+            ImageIcon(ClassLoader.getSystemResource("images/Customer5.png")).scaled(484, 484),
+            ImageIcon(ClassLoader.getSystemResource("images/Customer6.png")).scaled(484, 484),
+            ImageIcon(ClassLoader.getSystemResource("images/Customer7.png")).scaled(484, 484)
+        )
+        return customerImages.random()
+    }
+    fun getName():String {
+        val customerNames = listOf(
+            "Emanuel",
+            "Woman Man",
+            "David",
+            "Frederick",
+            "Floppy",
+            "Arthur Morgan",
+            "Lennayy",
+            "Joel"
+        )
+        return customerNames.random()
+    }
 }

@@ -7,6 +7,7 @@ import java.awt.event.MouseEvent
 import java.awt.event.MouseListener
 import javax.swing.*
 import kotlin.math.hypot
+import kotlin.random.Random
 
 
 //CONSANTS
@@ -51,14 +52,42 @@ class App {
     var acorns = 0
     var globalDifficultyMultiplier = 1.00
 
+    var instancedDragObject = JLabel()
+    var dragtype = ""
+
+    var orders = mutableListOf<Order>()
+
     fun harvestAcorn(){
         acorns++
     }
 
-    var instancedDragObject = JLabel()
-    var dragtype = ""
-
-    val debugCustomer = locations[1].createOrder(globalDifficultyMultiplier)
+    fun handleOrderTimer(){
+        val easyOrderIndexes = mutableListOf(1,2,3)
+        val hardOrderIndexes = mutableListOf(4,5)
+        if (orders.size < 5){
+            while (true){
+                if (Random.nextDouble(0.00,3.00) > globalDifficultyMultiplier) {
+                    println("adding easy")
+                    if (easyOrderIndexes.size > 0) {
+                        val locationIndex = easyOrderIndexes.random()
+                        if (locations[locationIndex].currentOrder == null){
+                            orders.add(locations[locationIndex].createOrder(globalDifficultyMultiplier))
+                            break
+                        }else easyOrderIndexes.remove(locationIndex)
+                    } else break
+                } else {
+                    println("adding hard")
+                    if (hardOrderIndexes.size > 0) {
+                        val locationIndex = hardOrderIndexes.random()
+                        if (locations[locationIndex].currentOrder == null) {
+                            orders.add(locations[locationIndex].createOrder(globalDifficultyMultiplier))
+                            break
+                        } else hardOrderIndexes.remove(locationIndex)
+                    } else break
+                }
+            }
+        }
+    }
 }
 
 
@@ -114,15 +143,24 @@ class MainWindow(val app: App) {
     private var travelPopup = JLabel("Travelling...")
     private var toggleLocationButton = JButton("Enter ${app.currentLocation.name}")
 
-    //Stats
+    //User Information
     private val nutAmount = JLabel(app.acorns.toString())
+
+    private val orderLabels = mutableListOf(JLabel("1"), JLabel("2"), JLabel("3"), JLabel("4"), JLabel("5"))
+    private val orderNames = mutableListOf(JLabel("1"), JLabel("2"), JLabel("3"), JLabel("4"), JLabel("5"))
+    private val orderLocations = mutableListOf(JLabel("1"), JLabel("2"), JLabel("3"), JLabel("4"), JLabel("5"))
+    private val orderImage = ImageIcon(ClassLoader.getSystemResource("images/OrderNotification.png")).scaled(273, 31)
+
 
     //Timers
     private val travelTimer = Timer(10, null)
     private val seedDragTimer = Timer(10, null)
+    private val orderDirectorTimer = Timer(5000, null)
+
 
 
     init {
+        orderDirectorTimer.start()
         setupLayout()
         setupStyles()
         setupActions()
@@ -158,6 +196,30 @@ class MainWindow(val app: App) {
         pots[2].setBounds(340, 100, 130, 285)
         pots[3].setBounds(470, 190, 130, 285)
 
+        orderLabels[0].setBounds( 35, 568, 273, 31)
+        orderLabels[1].setBounds( 35, 599, 273, 31)
+        orderLabels[2].setBounds( 35, 630, 273, 31)
+        orderLabels[3].setBounds( 35, 661, 273, 31)
+        orderLabels[4].setBounds( 35, 692, 273, 31)
+
+        orderNames[0].setBounds( 40, 565, 273, 31)
+        orderNames[1].setBounds( 40, 596, 273, 31)
+        orderNames[2].setBounds( 40, 627, 273, 31)
+        orderNames[3].setBounds( 40, 658, 273, 31)
+        orderNames[4].setBounds( 40, 689, 273, 31)
+
+        orderLocations[0].setBounds( 130, 565, 273, 31)
+        orderLocations[1].setBounds( 130, 596, 273, 31)
+        orderLocations[2].setBounds( 130, 627, 273, 31)
+        orderLocations[3].setBounds( 130, 658, 273, 31)
+        orderLocations[4].setBounds( 130, 689, 273, 31)
+
+        for (i in orderLabels.indices) {
+            panel.add(orderLabels[i], JLayeredPane.DEFAULT_LAYER)
+            panel.add(orderNames[i], JLayeredPane.DEFAULT_LAYER)
+            panel.add(orderLocations[i], JLayeredPane.DEFAULT_LAYER)
+        }
+
         for (pot in pots){
             panel.add(pot, JLayeredPane.DEFAULT_LAYER)
         }
@@ -189,6 +251,10 @@ class MainWindow(val app: App) {
             pot.icon = potImages[0]
         }
 
+        for (label in orderLabels){
+            label.icon = orderImage
+        }
+
         seedSpawner.icon = seedImage
         waterSpawner.icon = waterImage
 
@@ -200,6 +266,13 @@ class MainWindow(val app: App) {
 
         travelPopup.font = Font(Font.SANS_SERIF, Font.BOLD, 13)
         travelPopup.foreground = Color.BLACK
+
+        for (i in orderNames.indices){
+            orderNames[i].font = Font(Font.SANS_SERIF, Font.BOLD, 13)
+            orderNames[i].foreground = Color.BLACK
+            orderLocations[i].font = Font(Font.SANS_SERIF, Font.BOLD, 13)
+            orderLocations[i].foreground = Color.BLACK
+        }
     }
 
     private fun setupWindow() {
@@ -218,6 +291,7 @@ class MainWindow(val app: App) {
 
         travelTimer.addActionListener{ handleTravelTween() }
         seedDragTimer.addActionListener{ handleDrag() }
+        orderDirectorTimer.addActionListener { handleOrderTimer() }
 
         for (i in pots.indices){
             pots[i].addMouseListener(handleMousePot(i))
@@ -378,9 +452,13 @@ class MainWindow(val app: App) {
         }
     }
 
+    private fun handleOrderTimer(){
+        app.handleOrderTimer()
+        updateUI()
+    }
+
     //  ---------------------------------- UPDATE FUNCTION
     fun updateUI() {
-        println("hello")
         if (app.isOnWorldMap) {
             gameBackgroundLabel.icon = mapImage
             locationName.text = app.selectLocation.name
@@ -429,6 +507,16 @@ class MainWindow(val app: App) {
         }
 
         nutAmount.text = app.acorns.toString()
+
+        for (label in orderLabels){
+            label.isVisible = false
+        }
+
+        for (i in app.orders.indices){
+            orderLabels[i].isVisible = true
+            orderNames[i].text = app.orders[i].customerName
+            orderLocations[i].text = app.orders[i].locationName
+        }
     }
 
     fun show() {
@@ -439,12 +527,13 @@ class MainWindow(val app: App) {
 class Location(val name: String, val adjacentIndex: MutableList<Int>, val backgroundImage: ImageIcon, val coordXMin: Int, val coordXMax: Int, val coordYMin: Int, val coordYMax: Int) {
     var currentOrder: Order? = null
 
-    fun createOrder(difficultyMultiplier:Double){
-        currentOrder = currentOrder ?: Order(difficultyMultiplier)
+    fun createOrder(difficultyMultiplier:Double): Order{
+        currentOrder = currentOrder ?: Order(difficultyMultiplier, name)
+        return currentOrder!!
     }
 }
 
-class Order(difficultyMultiplier:Double) {
+class Order(difficultyMultiplier:Double, val locationName:String) {
     val customerIcon = getIcon()
     val customerName = getName()
 
@@ -456,7 +545,9 @@ class Order(difficultyMultiplier:Double) {
             ImageIcon(ClassLoader.getSystemResource("images/Customer4.png")).scaled(484, 484),
             ImageIcon(ClassLoader.getSystemResource("images/Customer5.png")).scaled(484, 484),
             ImageIcon(ClassLoader.getSystemResource("images/Customer6.png")).scaled(484, 484),
-            ImageIcon(ClassLoader.getSystemResource("images/Customer7.png")).scaled(484, 484)
+            ImageIcon(ClassLoader.getSystemResource("images/Customer7.png")).scaled(484, 484),
+            ImageIcon(ClassLoader.getSystemResource("images/Customer8.png")).scaled(484, 484),
+            ImageIcon(ClassLoader.getSystemResource("images/Customer9.png")).scaled(484, 484)
         )
         return customerImages.random()
     }

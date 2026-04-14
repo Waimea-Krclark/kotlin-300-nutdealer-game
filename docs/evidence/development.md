@@ -44,9 +44,17 @@ prototype nut pots and growing/collecting
 
 ## Date: 12/04/2026
 
-added starter order logic, customers appearing at locations then notifications
+Added orders class, which is created and handled in the location class which means locations can create an order for themselves, making the customer only appear at the location that it is owned by.
 
-![example.png](screenshots/example.png)
+![customerLocations.png](screenshots/customerLocations.png)
+
+After getting orders to create at locations and all the basic logic set up, I made the notification system to show players the information on the orders, this was the first setup, creating a notficaton widget and only displaying the name. 
+
+![InitialNotifs.png](screenshots/InitialNotifs.png)
+
+Notifications displaying correctly, and showing notifications
+
+![PrototypeNotif.png](screenshots/PrototypeNotif.png)
 
 ---
 

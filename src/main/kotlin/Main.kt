@@ -13,6 +13,7 @@ import kotlin.random.Random
 
 //CONSANTS
 const val MAP_ICON_SIZE = 70
+const val MAX_ORDERS = 3 //Used for testing keep on 3 otherwise won't work with current graphical assets
 
 fun ImageIcon.scaled(width: Int, height: Int): ImageIcon = ImageIcon(image.getScaledInstance(width, height, Image.SCALE_SMOOTH))
 
@@ -120,6 +121,8 @@ class MainWindow(val game: Game) {
 
     //Other Location
     private val customerElement = JLabel()
+    private val customerSpeech = JLabel()
+    private val speechImage = ImageIcon(ClassLoader.getSystemResource("images/SpeechBubble.png")).scaled(271, 176)
 
     //User Interface
 
@@ -132,9 +135,13 @@ class MainWindow(val game: Game) {
     //User Information
     private val nutAmount = JLabel(game.acorns.toString())
 
-    private val orderLabels = mutableListOf(JLabel("1"), JLabel("2"), JLabel("3"))
-    private val orderNames = mutableListOf(JLabel("1"), JLabel("2"), JLabel("3"))
-    private val orderLocations = mutableListOf(JLabel("1"), JLabel("2"), JLabel("3"))
+
+
+    private val orderLabels = mutableListOf<JLabel>()
+    private val orderNames = mutableListOf<JLabel>()
+    private val orderLocations = mutableListOf<JLabel>()
+    private val orderNutAmount = mutableListOf<JLabel>()
+    private val orderRepAmount = mutableListOf<JLabel>()
     private val orderImage = ImageIcon(ClassLoader.getSystemResource("images/OrderNotification.png")).scaled(277, 47)
 
 
@@ -147,6 +154,13 @@ class MainWindow(val game: Game) {
 
     init {
         orderDirectorTimer.start()
+        for (i in 0 until MAX_ORDERS){
+            orderLabels.add(JLabel(i.toString()))
+            orderNames.add(JLabel(i.toString()))
+            orderLocations.add(JLabel(i.toString()))
+            orderNutAmount.add(JLabel(i.toString()))
+            orderRepAmount.add(JLabel(i.toString()))
+        }
         setupLayout()
         setupStyles()
         setupActions()
@@ -172,32 +186,43 @@ class MainWindow(val game: Game) {
         locationMarker.setBounds((game.selectLocation.coordXMin+game.selectLocation.coordXMax)-MAP_ICON_SIZE, game.selectLocation.coordYMin-MAP_ICON_SIZE, MAP_ICON_SIZE, MAP_ICON_SIZE)
         dealerLocation.setBounds((game.currentLocation.coordXMin+game.currentLocation.coordXMax)-MAP_ICON_SIZE, game.currentLocation.coordYMax-MAP_ICON_SIZE, MAP_ICON_SIZE, MAP_ICON_SIZE)
         customerElement.setBounds(500, 40, 484, 484)
+        customerSpeech.setBounds(300, 20, 277, 176)
 
         //Nut Den Elements
         seedSpawner.setBounds(430, 20, 100, 100)
         waterSpawner.setBounds(550, 20, 100, 100)
+
+        for (i in 0 until MAX_ORDERS){
+            orderLabels.add(JLabel(i.toString()))
+            orderNames.add(JLabel(i.toString()))
+            orderLocations.add(JLabel(i.toString()))
+            orderNutAmount.add(JLabel(i.toString()))
+            orderRepAmount.add(JLabel(i.toString()))
+        }
 
         pots[0].setBounds(80, 140, 130, 285)
         pots[1].setBounds(210, 220, 130, 285)
         pots[2].setBounds(340, 100, 130, 285)
         pots[3].setBounds(470, 190, 130, 285)
 
-        orderLabels[0].setBounds( 33, 570, 277, 47)
-        orderLabels[1].setBounds( 33, 620, 277, 47)
-        orderLabels[2].setBounds( 33, 670, 277, 47)
+        var initialLabelY = 570
+        var initialtextY = 563
 
-        orderNames[0].setBounds( 38, 563, 277, 47)
-        orderNames[1].setBounds( 38, 613, 277, 47)
-        orderNames[2].setBounds( 38, 663, 277, 47)
+        val yStep = 50
 
-        orderLocations[0].setBounds( 116, 563, 277, 47)
-        orderLocations[1].setBounds( 116, 613, 277, 47)
-        orderLocations[2].setBounds( 116, 663, 277, 47)
+        for (i in 0 until MAX_ORDERS){
+            orderLabels[i].setBounds( 33, initialLabelY, 277, 47)
+            orderNames[i].setBounds( 38, initialtextY, 277, 47)
+            orderLocations[i].setBounds( 116, initialtextY, 277, 47)
+            orderNutAmount[i].setBounds(245, initialtextY, 277, 47)
 
-        for (i in orderLabels.indices) {
             panel.add(orderLabels[i], JLayeredPane.DEFAULT_LAYER)
             panel.add(orderNames[i], JLayeredPane.DEFAULT_LAYER)
             panel.add(orderLocations[i], JLayeredPane.DEFAULT_LAYER)
+            panel.add(orderNutAmount[i], JLayeredPane.DEFAULT_LAYER)
+
+            initialLabelY += yStep
+            initialtextY += yStep
         }
 
         for (pot in pots){
@@ -205,6 +230,7 @@ class MainWindow(val game: Game) {
         }
 
         // Add all elements to screen
+        panel.add(customerSpeech, JLayeredPane.DEFAULT_LAYER)
         panel.add(customerElement, JLayeredPane.DEFAULT_LAYER)
         panel.add(waterSpawner, JLayeredPane.DEFAULT_LAYER)
         panel.add(seedSpawner, JLayeredPane.DEFAULT_LAYER)
@@ -226,6 +252,7 @@ class MainWindow(val game: Game) {
         UIbackgroundLabel.icon = UIBackgroundImage
         locationMarker.icon = markerImage
         dealerLocation.icon = dealerIcon
+        customerSpeech.icon = speechImage
 
         for (pot in pots){
             pot.icon = potImages[0]
@@ -247,11 +274,13 @@ class MainWindow(val game: Game) {
         travelPopup.font = Font(Font.SANS_SERIF, Font.BOLD, 13)
         travelPopup.foreground = Color.BLACK
 
-        for (i in orderNames.indices){
+        for (i in 0 until MAX_ORDERS){
             orderNames[i].font = Font(Font.SANS_SERIF, Font.BOLD, 13)
             orderNames[i].foreground = Color.BLACK
             orderLocations[i].font = Font(Font.SANS_SERIF, Font.BOLD, 13)
             orderLocations[i].foreground = Color.BLACK
+            orderNutAmount[i].font = Font(Font.SANS_SERIF, Font.BOLD, 13)
+            orderNutAmount[i].foreground = Color.BLACK
         }
     }
 
@@ -446,6 +475,7 @@ class MainWindow(val game: Game) {
             locationMarker.setBounds((game.selectLocation.coordXMin+game.selectLocation.coordXMax)/2-(MAP_ICON_SIZE/2), game.selectLocation.coordYMin-MAP_ICON_SIZE, MAP_ICON_SIZE, MAP_ICON_SIZE)
             dealerLocation.setBounds((game.currentLocation.coordXMin+game.currentLocation.coordXMax)/2-(MAP_ICON_SIZE/2), game.currentLocation.coordYMax-MAP_ICON_SIZE, MAP_ICON_SIZE, MAP_ICON_SIZE)
 
+            customerSpeech.isVisible = false
             customerElement.isVisible = false
             dealerLocation.isVisible = true
             locationMarker.isVisible = true
@@ -472,6 +502,7 @@ class MainWindow(val game: Game) {
 
             gameBackgroundLabel.icon = game.currentLocation.backgroundImage
 
+            customerSpeech.isVisible = game.currentLocation.currentOrder != null
             customerElement.isVisible = true
             customerElement.icon = game.currentLocation.currentOrder?.customerIcon
 
@@ -496,6 +527,7 @@ class MainWindow(val game: Game) {
             orderLabels[i].isVisible = true
             orderNames[i].text = game.orders[i].customerName
             orderLocations[i].text = game.orders[i].locationName
+            orderNutAmount[i].text = game.orders[i].acornNum.toString()
         }
     }
 
@@ -513,9 +545,11 @@ class Location(val name: String, val adjacentIndex: MutableList<Int>, val backgr
     }
 }
 
-class Order(difficultyMultiplier:Double, val locationName:String) {
+class Order(val difficultyMultiplier:Double, val locationName:String) {
     val customerIcon = getIcon()
     val customerName = getName()
+    val acornNum = getAcornAmount()
+
 
     fun getIcon():ImageIcon {
         val customerImages = listOf(
@@ -550,5 +584,10 @@ class Order(difficultyMultiplier:Double, val locationName:String) {
             "Joel"
         )
         return customerNames.random()
+    }
+
+    fun getAcornAmount():Int{
+        val acorns = (Random.nextDouble(0.5, 1.5) * (difficultyMultiplier*difficultyMultiplier*2)).toInt()
+        return acorns
     }
 }

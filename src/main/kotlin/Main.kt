@@ -123,6 +123,10 @@ class MainWindow(val game: Game) {
     private val customerElement = JLabel()
     private val customerSpeech = JLabel()
     private val speechImage = ImageIcon(ClassLoader.getSystemResource("images/SpeechBubble.png")).scaled(271, 176)
+    private val speechText = JLabel()
+    private val orderButton = JButton()
+    private val orderButtonImage = ImageIcon(ClassLoader.getSystemResource("images/orderButton.png")).scaled(230, 40)
+
 
     //User Interface
 
@@ -187,6 +191,8 @@ class MainWindow(val game: Game) {
         dealerLocation.setBounds((game.currentLocation.coordXMin+game.currentLocation.coordXMax)-MAP_ICON_SIZE, game.currentLocation.coordYMax-MAP_ICON_SIZE, MAP_ICON_SIZE, MAP_ICON_SIZE)
         customerElement.setBounds(500, 40, 484, 484)
         customerSpeech.setBounds(300, 20, 277, 176)
+        speechText.setBounds(310, 30, 240, 100)
+        orderButton.setBounds(310, 90, 230, 40)
 
         //Nut Den Elements
         seedSpawner.setBounds(430, 20, 100, 100)
@@ -230,6 +236,10 @@ class MainWindow(val game: Game) {
         }
 
         // Add all elements to screen
+        panel.add(orderButton, JLayeredPane.DEFAULT_LAYER)
+        panel.setLayer(orderButton, JLayeredPane.DEFAULT_LAYER+1)
+        panel.add(speechText, JLayeredPane.DEFAULT_LAYER)
+        panel.setLayer(speechText, JLayeredPane.DEFAULT_LAYER+1)
         panel.add(customerSpeech, JLayeredPane.DEFAULT_LAYER)
         panel.add(customerElement, JLayeredPane.DEFAULT_LAYER)
         panel.add(waterSpawner, JLayeredPane.DEFAULT_LAYER)
@@ -253,6 +263,7 @@ class MainWindow(val game: Game) {
         locationMarker.icon = markerImage
         dealerLocation.icon = dealerIcon
         customerSpeech.icon = speechImage
+        orderButton.icon = orderButtonImage
 
         for (pot in pots){
             pot.icon = potImages[0]
@@ -273,6 +284,10 @@ class MainWindow(val game: Game) {
 
         travelPopup.font = Font(Font.SANS_SERIF, Font.BOLD, 13)
         travelPopup.foreground = Color.BLACK
+
+        speechText.font = Font(Font.SANS_SERIF, Font.BOLD, 18)
+        speechText.foreground = Color.BLACK
+        speechText.verticalAlignment = SwingConstants.TOP
 
         for (i in 0 until MAX_ORDERS){
             orderNames[i].font = Font(Font.SANS_SERIF, Font.BOLD, 13)
@@ -322,7 +337,7 @@ class MainWindow(val game: Game) {
             }
 
             override fun mousePressed(e: MouseEvent?) {
-                if (!game.isOnWorldMap){
+                if (!game.isOnWorldMap && game.currentLocation == game.locations[0]){
                     if (seedSpawner.bounds.contains(panel.mousePosition)){
                         game.dragtype = "seed"
                         handleDraggableClick(seedImage, 430)
@@ -476,6 +491,8 @@ class MainWindow(val game: Game) {
             dealerLocation.setBounds((game.currentLocation.coordXMin+game.currentLocation.coordXMax)/2-(MAP_ICON_SIZE/2), game.currentLocation.coordYMax-MAP_ICON_SIZE, MAP_ICON_SIZE, MAP_ICON_SIZE)
 
             customerSpeech.isVisible = false
+            speechText.isVisible = false
+            orderButton.isVisible = false
             customerElement.isVisible = false
             dealerLocation.isVisible = true
             locationMarker.isVisible = true
@@ -502,8 +519,12 @@ class MainWindow(val game: Game) {
 
             gameBackgroundLabel.icon = game.currentLocation.backgroundImage
 
+
+            speechText.isVisible = game.currentLocation.currentOrder != null
+            orderButton.isVisible = game.currentLocation.currentOrder != null
+            speechText.text = game.currentLocation.currentOrder?.customerSpeech
             customerSpeech.isVisible = game.currentLocation.currentOrder != null
-            customerElement.isVisible = true
+            customerElement.isVisible = game.currentLocation.currentOrder != null
             customerElement.icon = game.currentLocation.currentOrder?.customerIcon
 
             when (game.currentLocation){
@@ -548,6 +569,7 @@ class Location(val name: String, val adjacentIndex: MutableList<Int>, val backgr
 class Order(val difficultyMultiplier:Double, val locationName:String) {
     val customerIcon = getIcon()
     val customerName = getName()
+    val customerSpeech = getSpeechPrompt()
     val acornNum = getAcornAmount()
 
 
@@ -561,10 +583,14 @@ class Order(val difficultyMultiplier:Double, val locationName:String) {
             ImageIcon(ClassLoader.getSystemResource("images/Customer6.png")).scaled(484, 484),
             ImageIcon(ClassLoader.getSystemResource("images/Customer7.png")).scaled(484, 484),
             ImageIcon(ClassLoader.getSystemResource("images/Customer8.png")).scaled(484, 484),
-            ImageIcon(ClassLoader.getSystemResource("images/Customer9.png")).scaled(484, 484)
+            ImageIcon(ClassLoader.getSystemResource("images/Customer9.png")).scaled(484, 484),
+            ImageIcon(ClassLoader.getSystemResource("images/Customer10.png")).scaled(484, 484),
+            ImageIcon(ClassLoader.getSystemResource("images/Customer11.png")).scaled(484, 484),
+            ImageIcon(ClassLoader.getSystemResource("images/Customer12.png")).scaled(484, 484)
         )
         return customerImages.random()
     }
+
     fun getName():String {
         val customerNames = listOf(
             "Emanuel",
@@ -581,9 +607,29 @@ class Order(val difficultyMultiplier:Double, val locationName:String) {
             "Peter",
             "Hugh Jass",
             "Mike Oxlong",
-            "Joel"
+            "Joel",
+            "Johnette",
+            "Johnabella",
+            "Susan",
+            "Alex",
+            "Sir Scoop"
         )
         return customerNames.random()
+    }
+
+    fun getSpeechPrompt(): String{
+        val promptsList = listOf(
+            "<html>You got the nuts? I have the cash.</html>",
+            "<html>I uh... h-hello... Give them here.</html>",
+            "<html>Hurry up I don't have time to deal with this.</html>",
+            "<html>Broo... This is the good stuff yo.</html>",
+            "<html>God you don't know how long I've been waiting.</html>",
+            "<html>g-g-g-give them i need them i need them i need them.</html>",
+            "<html>Why thank you my good sir!</html>",
+            "<html>Alright here's the cash.</html>",
+            "<html>Don't try anything alright?</html>"
+        )
+        return promptsList.random()
     }
 
     fun getAcornAmount():Int{

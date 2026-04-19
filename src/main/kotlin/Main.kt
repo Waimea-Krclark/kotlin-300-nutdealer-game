@@ -542,6 +542,9 @@ class MainWindow(val game: Game) {
     private fun handleProgressbar(){
         game.notoriety-= 0.0012
         notorietyMarker.setBounds((NOTORIETY_MIN_X + game.notoriety * (NOTORIETY_MAX_X - NOTORIETY_MIN_X)).toInt(), 600, 25, 25)
+        if (game.notoriety <= 0){
+
+        }
 
         for (location in game.locations){
             val orderIndex = game.orders.indexOf(location.currentOrder)

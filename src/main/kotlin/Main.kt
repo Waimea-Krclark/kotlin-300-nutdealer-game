@@ -14,6 +14,10 @@ import kotlin.random.Random
 //CONSANTS
 const val MAP_ICON_SIZE = 70
 const val MAX_ORDERS = 3 //Used for testing keep on 3 otherwise won't work with current graphical assets
+const val NOTORIETY_MIN_X = 331
+const val NOTORIETY_MAX_X = 831
+const val ACORN_VALUE = 100
+
 
 fun ImageIcon.scaled(width: Int, height: Int): ImageIcon = ImageIcon(image.getScaledInstance(width, height, Image.SCALE_SMOOTH))
 
@@ -51,7 +55,11 @@ class Game {
     var travelling = false
     var travelProgress:Double = 0.00
 
+    var orderLikelihood = 0.00
+
+    var notoriety = 0.50
     var acorns = 0
+    var cash = 0
     var globalDifficultyMultiplier = 1.00
 
     var instancedDragObject = JLabel()
@@ -65,9 +73,9 @@ class Game {
 
     fun handleOrderTimer() {
         val randomOrderChance = Random.nextDouble(0.0,3.0)
-        if (randomOrderChance*globalDifficultyMultiplier > 2.8){
+        if ((randomOrderChance*globalDifficultyMultiplier)+orderLikelihood > 2.9){
             val possibleLocations = locations.filter { it.currentOrder == null && it.name != "Nut Den" }
-
+            orderLikelihood = 0.00
             if (orders.size < 3) {
                 val randomSeed = Random.nextDouble(0.2, 1.0)
                 val weightedSeed = (randomSeed * globalDifficultyMultiplier)
@@ -76,15 +84,24 @@ class Game {
 
                 location?.let { orders.add(it.createOrder(globalDifficultyMultiplier)) }
             }
-        }
+        }else orderLikelihood += 0.05
     }
 
     fun completeOrder(){
         acorns -= currentLocation.currentOrder?.acornNum ?: 0
-        globalDifficultyMultiplier += Random.nextDouble(0.01, 0.05)
-        println(globalDifficultyMultiplier)
-        orders.remove(currentLocation.currentOrder)
-        currentLocation.currentOrder = null
+        cash += currentLocation.currentOrder?.acornNum?.times(ACORN_VALUE) ?: 0
+        globalDifficultyMultiplier += Random.nextDouble(0.05, 0.15)
+        removeOrder(currentLocation, false)
+    }
+
+    fun removeOrder(location: Location, isFail: Boolean){
+        val notorietyAmount = location.currentOrder?.notorietyAmount?.toDouble() ?: 0.0
+
+        if (isFail) notoriety -= (notorietyAmount / 100)
+        else notoriety += (notorietyAmount / 100)
+
+        orders.remove(location.currentOrder)
+        location.currentOrder = null
     }
 }
 
@@ -149,29 +166,36 @@ class MainWindow(val game: Game) {
 
     //User Information
     private val nutAmount = JLabel(game.acorns.toString())
+    private val cash = JLabel(game.cash.toString())
 
-
+    private val notorietyMarker = JLabel()
+    private val notorietyImage = ImageIcon(ClassLoader.getSystemResource("images/noterietyMarker.png")).scaled(25, 25)
 
     private val orderLabels = mutableListOf<JLabel>()
     private val orderNames = mutableListOf<JLabel>()
     private val orderLocations = mutableListOf<JLabel>()
     private val orderNutAmount = mutableListOf<JLabel>()
     private val orderRepAmount = mutableListOf<JLabel>()
+    private val orderTimerProgress = mutableListOf<JProgressBar>()
     private val orderImage = ImageIcon(ClassLoader.getSystemResource("images/OrderNotification.png")).scaled(277, 47)
 
     //Timers
     private val travelTimer = Timer(10, null)
     private val seedDragTimer = Timer(10, null)
+    private val progressbarTimer = Timer(300, null)
     private val orderDirectorTimer = Timer(1000, null)
 
     init {
         orderDirectorTimer.start()
+        progressbarTimer.start()
         for (i in 0 until MAX_ORDERS){
             orderLabels.add(JLabel())
             orderNames.add(JLabel())
             orderLocations.add(JLabel())
             orderNutAmount.add(JLabel())
             orderRepAmount.add(JLabel())
+            orderTimerProgress.add(JProgressBar())
+            orderTimerProgress[i].value = 100
         }
         setupLayout()
         setupStyles()
@@ -193,6 +217,8 @@ class MainWindow(val game: Game) {
         travelPopup.setBounds(890, 590, 100, 30)
         toggleLocationButton.setBounds(890, 590, 180, 30)
         nutAmount.setBounds(500, 640, 100, 100)
+        cash.setBounds(770, 640, 100, 100)
+        notorietyMarker.setBounds(831, 600, 25, 25)
 
         //Graphical Elements
         locationMarker.setBounds((game.selectLocation.coordXMin+game.selectLocation.coordXMax)-MAP_ICON_SIZE, game.selectLocation.coordYMin-MAP_ICON_SIZE, MAP_ICON_SIZE, MAP_ICON_SIZE)
@@ -201,6 +227,7 @@ class MainWindow(val game: Game) {
         customerSpeech.setBounds(300, 20, 277, 176)
         speechText.setBounds(310, 30, 240, 100)
         orderButton.setBounds(310, 90, 230, 40)
+
 
         //Nut Den Elements
         seedSpawner.setBounds(430, 20, 100, 100)
@@ -221,22 +248,18 @@ class MainWindow(val game: Game) {
             orderNames[i].setBounds( 36, initialtextY, 277, 47)
             orderLocations[i].setBounds( 118, initialtextY, 277, 47)
             orderNutAmount[i].setBounds(245, initialtextY, 277, 47)
+            orderRepAmount[i].setBounds(285, initialtextY, 277, 47)
+            orderTimerProgress[i].setBounds(40, initialtextY+37, 260, 10)
 
             panel.add(orderLabels[i], JLayeredPane.DEFAULT_LAYER)
             panel.add(orderNames[i], JLayeredPane.DEFAULT_LAYER)
             panel.add(orderLocations[i], JLayeredPane.DEFAULT_LAYER)
             panel.add(orderNutAmount[i], JLayeredPane.DEFAULT_LAYER)
+            panel.add(orderRepAmount[i], JLayeredPane.DEFAULT_LAYER)
+            panel.add(orderTimerProgress[i], JLayeredPane.DEFAULT_LAYER)
 
             initialLabelY += yStep
             initialtextY += yStep
-        }
-
-        for (i in 0 until MAX_ORDERS){
-            orderLabels.add(JLabel(i.toString()))
-            orderNames.add(JLabel(i.toString()))
-            orderLocations.add(JLabel(i.toString()))
-            orderNutAmount.add(JLabel(i.toString()))
-            orderRepAmount.add(JLabel(i.toString()))
         }
 
         for (pot in pots){
@@ -244,6 +267,7 @@ class MainWindow(val game: Game) {
         }
 
         // Add all elements to screen
+        panel.add(notorietyMarker, JLayeredPane.DEFAULT_LAYER)
         panel.add(orderButton, JLayeredPane.DEFAULT_LAYER)
         panel.setLayer(orderButton, JLayeredPane.DEFAULT_LAYER+1)
         panel.add(speechText, JLayeredPane.DEFAULT_LAYER)
@@ -253,6 +277,7 @@ class MainWindow(val game: Game) {
         panel.add(waterSpawner, JLayeredPane.DEFAULT_LAYER)
         panel.add(seedSpawner, JLayeredPane.DEFAULT_LAYER)
         panel.add(nutAmount, JLayeredPane.DEFAULT_LAYER)
+        panel.add(cash, JLayeredPane.DEFAULT_LAYER)
         panel.add(dealerLocation, JLayeredPane.DEFAULT_LAYER)
         panel.add(locationMarker, JLayeredPane.DEFAULT_LAYER)
         panel.add(locationName, JLayeredPane.DEFAULT_LAYER)
@@ -271,6 +296,7 @@ class MainWindow(val game: Game) {
         locationMarker.icon = markerImage
         dealerLocation.icon = dealerIcon
         customerSpeech.icon = speechImage
+        notorietyMarker.icon = notorietyImage
 
         orderButton.icon = orderButtonImage
         orderButton.setBorderPainted(false)
@@ -298,6 +324,9 @@ class MainWindow(val game: Game) {
         nutAmount.font = Font(Font.SANS_SERIF, Font.BOLD, 20)
         nutAmount.foreground = Color.BLACK
 
+        cash.font = Font(Font.SANS_SERIF, Font.BOLD, 20)
+        cash.foreground = Color.BLACK
+
         travelPopup.font = Font(Font.SANS_SERIF, Font.BOLD, 13)
         travelPopup.foreground = Color.BLACK
 
@@ -312,6 +341,8 @@ class MainWindow(val game: Game) {
             orderLocations[i].foreground = Color.BLACK
             orderNutAmount[i].font = Font(Font.SANS_SERIF, Font.BOLD, 13)
             orderNutAmount[i].foreground = Color.BLACK
+            orderRepAmount[i].font = Font(Font.SANS_SERIF, Font.BOLD, 13)
+            orderRepAmount[i].foreground = Color.BLACK
         }
     }
 
@@ -333,6 +364,7 @@ class MainWindow(val game: Game) {
         travelTimer.addActionListener{ handleTravelTween() }
         seedDragTimer.addActionListener{ handleDrag() }
         orderDirectorTimer.addActionListener { handleOrderTimer() }
+        progressbarTimer.addActionListener { handleProgressbar() }
 
         for (i in pots.indices){
             pots[i].addMouseListener(handleMousePot(i))
@@ -438,7 +470,7 @@ class MainWindow(val game: Game) {
             "water"->{
                 if (pots[potID].icon == potImages[1]) {
                     pots[potID].icon = potImages[2]
-                    val acorntimer = Timer(1000, null)
+                    val acorntimer = Timer(3000, null)
                     if (!acorntimer.isRunning){
                         pots[potID].icon = potImages[3]
                         acorntimer.addActionListener{ potInteract(potID, acorntimer) }
@@ -507,9 +539,28 @@ class MainWindow(val game: Game) {
         updateUI()
     }
 
+    private fun handleProgressbar(){
+        game.notoriety-= 0.0012
+        notorietyMarker.setBounds((NOTORIETY_MIN_X + game.notoriety * (NOTORIETY_MAX_X - NOTORIETY_MIN_X)).toInt(), 600, 25, 25)
+
+        for (location in game.locations){
+            val orderIndex = game.orders.indexOf(location.currentOrder)
+            if (orderIndex in game.orders.indices){
+
+                location.currentOrder?.reduceOrderTimer()
+                orderTimerProgress[orderIndex].value = location.currentOrder?.timerVal ?: 100
+                if(orderTimerProgress[orderIndex].value <= 0){
+                    orderTimerProgress[orderIndex].value = 100
+                    game.removeOrder(location,true)
+                    handleProgressbar()
+                    updateUI()
+                }
+            }
+        }
+    }
+
     //  ---------------------------------- UPDATE FUNCTION
     fun updateUI() {
-        println("update")
         if (game.isOnWorldMap) {
             //World Map setup
             gameBackgroundLabel.icon = mapImage
@@ -573,22 +624,24 @@ class MainWindow(val game: Game) {
 
         //Global UI
         nutAmount.text = game.acorns.toString()
+        cash.text = game.cash.toString()
+        notorietyMarker.setBounds((NOTORIETY_MIN_X + game.notoriety * (NOTORIETY_MAX_X - NOTORIETY_MIN_X)).toInt(), 600, 25, 25)
 
-        for (i in orderLabels.indices){
-            orderLabels[i].isVisible = false
-            orderNames[i].isVisible = false
-            orderLocations[i].isVisible = false
-            orderNutAmount[i].isVisible = false
+        for (i in 0 until MAX_ORDERS){
+            val visible = i < game.orders.size
+            orderLabels[i].isVisible = visible
+            orderNames[i].isVisible = visible
+            orderLocations[i].isVisible = visible
+            orderNutAmount[i].isVisible = visible
+            orderRepAmount[i].isVisible = visible
+            orderTimerProgress[i].isVisible = visible
         }
 
         for (i in game.orders.indices){
-            orderLabels[i].isVisible = true
-            orderNames[i].isVisible = true
-            orderLocations[i].isVisible = true
-            orderNutAmount[i].isVisible = true
             orderNames[i].text = game.orders[i].customerName
             orderLocations[i].text = game.orders[i].locationName
             orderNutAmount[i].text = game.orders[i].acornNum.toString()
+            orderRepAmount[i].text = game.orders[i].notorietyAmount.toString()
         }
     }
 
@@ -611,7 +664,8 @@ class Order(val difficultyMultiplier:Double, val locationName:String) {
     val customerName = getName()
     val customerSpeech = getSpeechPrompt()
     val acornNum = getAcornAmount()
-
+    val notorietyAmount = getRepAmount()
+    var timerVal = 100
 
     fun getIcon():ImageIcon {
         val customerImages = listOf(
@@ -675,5 +729,14 @@ class Order(val difficultyMultiplier:Double, val locationName:String) {
     fun getAcornAmount():Int{
         val acorns = (Random.nextDouble(0.5, 1.5) * (difficultyMultiplier*difficultyMultiplier*2)).toInt()
         return acorns
+    }
+
+    fun getRepAmount():Int{
+        val notoriety = (Random.nextInt(5, 20) * (difficultyMultiplier)).toInt()
+        return notoriety
+    }
+
+    fun reduceOrderTimer(){
+        timerVal -= 1
     }
 }

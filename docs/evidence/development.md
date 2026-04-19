@@ -20,25 +20,33 @@ The window now displays both the User Interface, and the game graphics, allowing
 
 ## Date: 25/03/2026
 
-Added locations class and created each location with coordinates for a bounding box, so that when a user clicks, it can find the locations and also use the position of locations for other displays and interactions. 
+Added locations class and created each location with coordinates for a bounding box, so that when a user clicks, it can find the locations and also use the position of locations for other displays and interactions.
 
-![example.png](screenshots/example.png)
+![LocationClicking.gif](screenshots/LocationClicking.gif)
 
 ---
 
 ## Date: 27/03/2026
 
-added animated travelling to locations, adjacent pathing and graphics for each location
+Locations now can be travelling to, with a timer and animation to show the Nut Dealers position on the map. As well as this only adjacent locations can be travelled to (Along paths) and locations can be entered, with different graphics for each which are hhandled by the locations class.
 
-![example.png](screenshots/example.png)
+![Travelling.gif](screenshots/Travelling.gif)
 
 ---
 
-## Date: 31/03/2026
+## Date: 30/03/2026
 
-prototype nut pots and growing/collecting
+Prototyped the nut growing system, where you would click on the pot and then a seed would be planted and grow into an acorn plant over time where it could be collected and replanted.
 
-![example.png](screenshots/example.png)
+![PrototypePlanting.png](screenshots/PrototypePlanting.png)
+
+---
+
+## Date: 1/04/2026
+
+Reprogrammed the growing mechanic from scratch, implementing a drag and drop system that make the whole mechanic more interactable. Players now drag seeds into the pot, and then water it before it will grow and can be harvested, each stage of growing has a different graphic that is held in a list.
+
+![NutGrowing.gif](screenshots/NutGrowing.gif)
 
 ---
 
@@ -55,6 +63,14 @@ After getting orders to create at locations and all the basic logic set up, I ma
 Notifications displaying correctly, and showing notifications
 
 ![PrototypeNotif.png](screenshots/PrototypeNotif.png)
+
+---
+
+## Date: 19/04/2026
+
+Orders are now fully functional with creation, nut growing, and handing them over to customers
+
+![OrderCompletion.gif](screenshots/OrderCompletion.gif)
 
 ---
 

@@ -64,16 +64,27 @@ class Game {
     }
 
     fun handleOrderTimer() {
-        val possibleLocations = locations.filter { it.currentOrder == null && it.name != "Nut Den" }
+        val randomOrderChance = Random.nextDouble(0.0,3.0)
+        if (randomOrderChance*globalDifficultyMultiplier > 2.8){
+            val possibleLocations = locations.filter { it.currentOrder == null && it.name != "Nut Den" }
 
-        if (orders.size < 3) {
-            val randomSeed = Random.nextDouble(0.2, 1.0)
-            val weightedSeed = (randomSeed * globalDifficultyMultiplier)
+            if (orders.size < 3) {
+                val randomSeed = Random.nextDouble(0.2, 1.0)
+                val weightedSeed = (randomSeed * globalDifficultyMultiplier)
 
-            val location = possibleLocations.minByOrNull { abs(it.difficultyWeight - weightedSeed) }
+                val location = possibleLocations.minByOrNull { abs(it.difficultyWeight - weightedSeed) }
 
-            location?.let { orders.add(it.createOrder(globalDifficultyMultiplier)) }
+                location?.let { orders.add(it.createOrder(globalDifficultyMultiplier)) }
+            }
         }
+    }
+
+    fun completeOrder(){
+        acorns -= currentLocation.currentOrder?.acornNum ?: 0
+        globalDifficultyMultiplier += Random.nextDouble(0.01, 0.05)
+        println(globalDifficultyMultiplier)
+        orders.remove(currentLocation.currentOrder)
+        currentLocation.currentOrder = null
     }
 }
 
@@ -148,22 +159,19 @@ class MainWindow(val game: Game) {
     private val orderRepAmount = mutableListOf<JLabel>()
     private val orderImage = ImageIcon(ClassLoader.getSystemResource("images/OrderNotification.png")).scaled(277, 47)
 
-
     //Timers
     private val travelTimer = Timer(10, null)
     private val seedDragTimer = Timer(10, null)
-    private val orderDirectorTimer = Timer(5000, null)
-
-
+    private val orderDirectorTimer = Timer(1000, null)
 
     init {
         orderDirectorTimer.start()
         for (i in 0 until MAX_ORDERS){
-            orderLabels.add(JLabel(i.toString()))
-            orderNames.add(JLabel(i.toString()))
-            orderLocations.add(JLabel(i.toString()))
-            orderNutAmount.add(JLabel(i.toString()))
-            orderRepAmount.add(JLabel(i.toString()))
+            orderLabels.add(JLabel())
+            orderNames.add(JLabel())
+            orderLocations.add(JLabel())
+            orderNutAmount.add(JLabel())
+            orderRepAmount.add(JLabel())
         }
         setupLayout()
         setupStyles()
@@ -198,14 +206,6 @@ class MainWindow(val game: Game) {
         seedSpawner.setBounds(430, 20, 100, 100)
         waterSpawner.setBounds(550, 20, 100, 100)
 
-        for (i in 0 until MAX_ORDERS){
-            orderLabels.add(JLabel(i.toString()))
-            orderNames.add(JLabel(i.toString()))
-            orderLocations.add(JLabel(i.toString()))
-            orderNutAmount.add(JLabel(i.toString()))
-            orderRepAmount.add(JLabel(i.toString()))
-        }
-
         pots[0].setBounds(80, 140, 130, 285)
         pots[1].setBounds(210, 220, 130, 285)
         pots[2].setBounds(340, 100, 130, 285)
@@ -218,8 +218,8 @@ class MainWindow(val game: Game) {
 
         for (i in 0 until MAX_ORDERS){
             orderLabels[i].setBounds( 33, initialLabelY, 277, 47)
-            orderNames[i].setBounds( 38, initialtextY, 277, 47)
-            orderLocations[i].setBounds( 116, initialtextY, 277, 47)
+            orderNames[i].setBounds( 36, initialtextY, 277, 47)
+            orderLocations[i].setBounds( 118, initialtextY, 277, 47)
             orderNutAmount[i].setBounds(245, initialtextY, 277, 47)
 
             panel.add(orderLabels[i], JLayeredPane.DEFAULT_LAYER)
@@ -229,6 +229,14 @@ class MainWindow(val game: Game) {
 
             initialLabelY += yStep
             initialtextY += yStep
+        }
+
+        for (i in 0 until MAX_ORDERS){
+            orderLabels.add(JLabel(i.toString()))
+            orderNames.add(JLabel(i.toString()))
+            orderLocations.add(JLabel(i.toString()))
+            orderNutAmount.add(JLabel(i.toString()))
+            orderRepAmount.add(JLabel(i.toString()))
         }
 
         for (pot in pots){
@@ -263,7 +271,15 @@ class MainWindow(val game: Game) {
         locationMarker.icon = markerImage
         dealerLocation.icon = dealerIcon
         customerSpeech.icon = speechImage
+
         orderButton.icon = orderButtonImage
+        orderButton.setBorderPainted(false)
+        orderButton.setContentAreaFilled(false)
+        orderButton.setFocusPainted(false)
+        orderButton.font = Font(Font.SANS_SERIF, Font.BOLD, 20)
+        orderButton.foreground = Color.BLACK
+        orderButton.verticalTextPosition = SwingConstants.CENTER
+        orderButton.horizontalTextPosition = SwingConstants.CENTER
 
         for (pot in pots){
             pot.icon = potImages[0]
@@ -285,7 +301,7 @@ class MainWindow(val game: Game) {
         travelPopup.font = Font(Font.SANS_SERIF, Font.BOLD, 13)
         travelPopup.foreground = Color.BLACK
 
-        speechText.font = Font(Font.SANS_SERIF, Font.BOLD, 18)
+        speechText.font = Font(Font.SANS_SERIF, Font.BOLD, 15)
         speechText.foreground = Color.BLACK
         speechText.verticalAlignment = SwingConstants.TOP
 
@@ -312,6 +328,7 @@ class MainWindow(val game: Game) {
 
         travelButton.addActionListener{ handleTravelClick() }
         toggleLocationButton.addActionListener{ handleLocationClick() }
+        orderButton.addActionListener { handleOrderHandover() }
 
         travelTimer.addActionListener{ handleTravelTween() }
         seedDragTimer.addActionListener{ handleDrag() }
@@ -439,6 +456,15 @@ class MainWindow(val game: Game) {
         }
     }
 
+    private fun handleOrderHandover(){
+        game.currentLocation.currentOrder?.acornNum?.let {
+            if (game.acorns >= it){
+                game.completeOrder()
+                updateUI()
+            }
+        }
+    }
+
     //  ---------------------------------- TIMER HANDLERS
     private fun handleTravelTween() {
         val initialX = (game.currentLocation.coordXMin+game.currentLocation.coordXMax)/2-(MAP_ICON_SIZE/2)
@@ -483,69 +509,83 @@ class MainWindow(val game: Game) {
 
     //  ---------------------------------- UPDATE FUNCTION
     fun updateUI() {
+        println("update")
         if (game.isOnWorldMap) {
+            //World Map setup
             gameBackgroundLabel.icon = mapImage
             locationName.text = game.selectLocation.name
             toggleLocationButton.text = "Enter ${game.currentLocation.name}"
-            locationMarker.setBounds((game.selectLocation.coordXMin+game.selectLocation.coordXMax)/2-(MAP_ICON_SIZE/2), game.selectLocation.coordYMin-MAP_ICON_SIZE, MAP_ICON_SIZE, MAP_ICON_SIZE)
-            dealerLocation.setBounds((game.currentLocation.coordXMin+game.currentLocation.coordXMax)/2-(MAP_ICON_SIZE/2), game.currentLocation.coordYMax-MAP_ICON_SIZE, MAP_ICON_SIZE, MAP_ICON_SIZE)
 
-            customerSpeech.isVisible = false
-            speechText.isVisible = false
-            orderButton.isVisible = false
-            customerElement.isVisible = false
             dealerLocation.isVisible = true
             locationMarker.isVisible = true
             travelButton.isVisible = game.locations.indexOf(game.selectLocation) in game.currentLocation.adjacentIndex
 
+            //Hides location elements
+            customerSpeech.isVisible = false
+            speechText.isVisible = false
+            orderButton.isVisible = false
+            customerElement.isVisible = false
             seedSpawner.isVisible = false
             waterSpawner.isVisible = false
-            for (pot in pots){
-                pot.isVisible = false
-            }
 
+            for (pot in pots) pot.isVisible = false
+
+            //Travelling check
             if (game.travelling) {
                 travelPopup.isVisible = true
                 travelButton.isVisible = false
-            } else { travelPopup.isVisible = false }
+            } else{
+                travelPopup.isVisible = false
+                locationMarker.setBounds((game.selectLocation.coordXMin+game.selectLocation.coordXMax)/2-(MAP_ICON_SIZE/2), game.selectLocation.coordYMin-MAP_ICON_SIZE, MAP_ICON_SIZE, MAP_ICON_SIZE)
+                dealerLocation.setBounds((game.currentLocation.coordXMin+game.currentLocation.coordXMax)/2-(MAP_ICON_SIZE/2), game.currentLocation.coordYMax-MAP_ICON_SIZE, MAP_ICON_SIZE, MAP_ICON_SIZE)
+            }
 
-            if (game.currentLocation == game.selectLocation) { toggleLocationButton.isVisible = true }
-            else { toggleLocationButton.isVisible = false }
-        } else {
+            //Entering location check
+            if (game.currentLocation == game.selectLocation) toggleLocationButton.isVisible = true
+            else toggleLocationButton.isVisible = false
+
+        } else { //Update for locations
             dealerLocation.isVisible = false
             locationMarker.isVisible = false
 
             toggleLocationButton.text = "Exit ${game.currentLocation.name}"
-
             gameBackgroundLabel.icon = game.currentLocation.backgroundImage
 
-
-            speechText.isVisible = game.currentLocation.currentOrder != null
-            orderButton.isVisible = game.currentLocation.currentOrder != null
-            speechText.text = game.currentLocation.currentOrder?.customerSpeech
-            customerSpeech.isVisible = game.currentLocation.currentOrder != null
-            customerElement.isVisible = game.currentLocation.currentOrder != null
-            customerElement.icon = game.currentLocation.currentOrder?.customerIcon
-
             when (game.currentLocation){
-                game.locations[0] -> {
+                game.locations[0] -> { //Pots and growing tools in nut den
                      for (pot in pots){
                          pot.isVisible = true
                      }
                      seedSpawner.isVisible = true
                      waterSpawner.isVisible = true
                  }
+                else -> { //Elements for customers and orders
+                    speechText.isVisible = game.currentLocation.currentOrder != null
+                    orderButton.isVisible = game.currentLocation.currentOrder != null
+                    orderButton.text = game.currentLocation.currentOrder?.acornNum.toString()
+                    speechText.text = game.currentLocation.currentOrder?.customerSpeech
+                    customerSpeech.isVisible = game.currentLocation.currentOrder != null
+                    customerElement.isVisible = game.currentLocation.currentOrder != null
+                    customerElement.icon = game.currentLocation.currentOrder?.customerIcon
+                }
             }
         }
 
+        //Global UI
         nutAmount.text = game.acorns.toString()
 
-        for (label in orderLabels){
-            label.isVisible = false
+        for (i in orderLabels.indices){
+            orderLabels[i].isVisible = false
+            orderNames[i].isVisible = false
+            orderLocations[i].isVisible = false
+            orderNutAmount[i].isVisible = false
         }
 
         for (i in game.orders.indices){
             orderLabels[i].isVisible = true
+            orderNames[i].isVisible = true
+            orderLocations[i].isVisible = true
+            orderNutAmount[i].isVisible = true
             orderNames[i].text = game.orders[i].customerName
             orderLocations[i].text = game.orders[i].locationName
             orderNutAmount[i].text = game.orders[i].acornNum.toString()

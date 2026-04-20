@@ -11,12 +11,13 @@ import kotlin.math.hypot
 import kotlin.random.Random
 
 
-//CONSANTS
+//CONSTANTS
 const val MAP_ICON_SIZE = 70
 const val MAX_ORDERS = 3 //Used for testing keep on 3 otherwise won't work with current graphical assets
 const val NOTORIETY_MIN_X = 331
 const val NOTORIETY_MAX_X = 831
 const val ACORN_VALUE = 100
+const val NOTORIETY_PASSIVE_DECREASE = -0.0012//0.0012
 
 
 fun ImageIcon.scaled(width: Int, height: Int): ImageIcon = ImageIcon(image.getScaledInstance(width, height, Image.SCALE_SMOOTH))
@@ -49,6 +50,7 @@ class Game {
         Location("Cave Manor", mutableListOf(4), ImageIcon(ClassLoader.getSystemResource("images/CaveManor.png")).scaled(1080, 524), 1.20, 871, 1023, 74, 184)
     )
     var isOnWorldMap = true
+    var gameOver = false
 
     var currentLocation = locations[0]
     var selectLocation = locations[0]
@@ -59,7 +61,7 @@ class Game {
 
     var notoriety = 0.50
     var acorns = 0
-    var cash = 0
+    var cash = 1000
     var globalDifficultyMultiplier = 1.00
 
     var instancedDragObject = JLabel()
@@ -375,7 +377,7 @@ class MainWindow(val game: Game) {
     private fun handleBackgroundClick(): MouseListener {
         return object : MouseAdapter() {
             override fun mouseClicked(e: MouseEvent) {
-                if (game.isOnWorldMap){ // Blocks checking when in a location
+                if (game.isOnWorldMap && !game.gameOver){ // Blocks checking when in a location
                     for (location in game.locations){ // Checks if click location is in bounding box of a location
                         if(e.x in location.coordXMin..location.coordXMax && e.y in location.coordYMin..location.coordYMax && !game.travelling){
                             game.selectLocation = location
@@ -540,16 +542,21 @@ class MainWindow(val game: Game) {
     }
 
     private fun handleProgressbar(){
-        game.notoriety-= 0.0012
+        game.notoriety-= NOTORIETY_PASSIVE_DECREASE
         notorietyMarker.setBounds((NOTORIETY_MIN_X + game.notoriety * (NOTORIETY_MAX_X - NOTORIETY_MIN_X)).toInt(), 600, 25, 25)
         if (game.notoriety <= 0){
-
+            game.notoriety = 0.0
+            notorietyMarker.setBounds((NOTORIETY_MIN_X + game.notoriety * (NOTORIETY_MAX_X - NOTORIETY_MIN_X)).toInt(), 600, 25, 25)
+            endGame(ImageIcon(ClassLoader.getSystemResource("images/HomelessEnding.png")))
+        }else if (game.notoriety >= 1){
+            game.notoriety = 1.0
+            notorietyMarker.setBounds((NOTORIETY_MIN_X + game.notoriety * (NOTORIETY_MAX_X - NOTORIETY_MIN_X)).toInt(), 600, 25, 25)
+            endGame(ImageIcon(ClassLoader.getSystemResource("images/JailEnding.png")))
         }
 
         for (location in game.locations){
             val orderIndex = game.orders.indexOf(location.currentOrder)
             if (orderIndex in game.orders.indices){
-
                 location.currentOrder?.reduceOrderTimer()
                 orderTimerProgress[orderIndex].value = location.currentOrder?.timerVal ?: 100
                 if(orderTimerProgress[orderIndex].value <= 0){
@@ -651,6 +658,36 @@ class MainWindow(val game: Game) {
     fun show() {
         frame.isVisible = true
     }
+
+    private fun endGame(endScreen: ImageIcon){
+        orderDirectorTimer.stop()
+        progressbarTimer.stop()
+        game.gameOver = true
+        panel.removeAll()
+
+        val endLabel = JLabel()
+        val cashLabel = JLabel(game.cash.toString())
+        val highscoreLabel = JLabel("0")
+        val returnButton = JButton()
+
+        endLabel.setBounds(0,0,1080,726)
+        cashLabel.setBounds(450,500, 300, 100)
+        highscoreLabel.setBounds(450,595, 300, 100)
+
+        panel.add(cashLabel,JLayeredPane.DEFAULT_LAYER)
+        panel.add(highscoreLabel,JLayeredPane.DEFAULT_LAYER)
+        panel.add(endLabel, JLayeredPane.DEFAULT_LAYER-1)
+
+        endLabel.icon=endScreen.scaled(1080,726)
+        cashLabel.font = Font(Font.SANS_SERIF, Font.BOLD, 60)
+        cashLabel.foreground = Color.WHITE
+        highscoreLabel.font = Font(Font.SANS_SERIF, Font.BOLD, 60)
+        highscoreLabel.foreground = Color.WHITE
+
+
+        panel.revalidate()
+        panel.repaint()
+    }
 }
 
 class Location(val name: String, val adjacentIndex: MutableList<Int>, val backgroundImage: ImageIcon, val difficultyWeight: Double, val coordXMin: Int, val coordXMax: Int, val coordYMin: Int, val coordYMax: Int) {
@@ -670,7 +707,7 @@ class Order(val difficultyMultiplier:Double, val locationName:String) {
     val notorietyAmount = getRepAmount()
     var timerVal = 100
 
-    fun getIcon():ImageIcon {
+    private fun getIcon():ImageIcon {
         val customerImages = listOf(
             ImageIcon(ClassLoader.getSystemResource("images/Customer1.png")).scaled(484, 484),
             ImageIcon(ClassLoader.getSystemResource("images/Customer2.png")).scaled(484, 484),
@@ -688,7 +725,7 @@ class Order(val difficultyMultiplier:Double, val locationName:String) {
         return customerImages.random()
     }
 
-    fun getName():String {
+    private fun getName():String {
         val customerNames = listOf(
             "Emanuel",
             "Johnny",
@@ -714,7 +751,7 @@ class Order(val difficultyMultiplier:Double, val locationName:String) {
         return customerNames.random()
     }
 
-    fun getSpeechPrompt(): String{
+    private fun getSpeechPrompt(): String{
         val promptsList = listOf(
             "<html>You got the nuts? I have the cash.</html>",
             "<html>I uh... h-hello... Give them here.</html>",
@@ -729,12 +766,12 @@ class Order(val difficultyMultiplier:Double, val locationName:String) {
         return promptsList.random()
     }
 
-    fun getAcornAmount():Int{
+    private fun getAcornAmount():Int{
         val acorns = (Random.nextDouble(0.5, 1.5) * (difficultyMultiplier*difficultyMultiplier*2)).toInt()
         return acorns
     }
 
-    fun getRepAmount():Int{
+    private fun getRepAmount():Int{
         val notoriety = (Random.nextInt(5, 20) * (difficultyMultiplier)).toInt()
         return notoriety
     }

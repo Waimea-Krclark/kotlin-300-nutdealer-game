@@ -17,7 +17,9 @@ const val MAX_ORDERS = 3 //Used for testing keep on 3 otherwise won't work with 
 const val NOTORIETY_MIN_X = 331
 const val NOTORIETY_MAX_X = 831
 const val ACORN_VALUE = 100
-const val NOTORIETY_PASSIVE_DECREASE = -0.0012//0.0012
+const val NOTORIETY_PASSIVE_DECREASE = 0.0012//0.0012
+const val stepSize = 2
+
 
 
 fun ImageIcon.scaled(width: Int, height: Int): ImageIcon = ImageIcon(image.getScaledInstance(width, height, Image.SCALE_SMOOTH))
@@ -49,20 +51,20 @@ class Game {
         Location("Hole Home", mutableListOf(2, 3, 5), ImageIcon(ClassLoader.getSystemResource("images/HoleHome.png")).scaled(1080, 524), 1.0, 746, 921, 335, 463),
         Location("Cave Manor", mutableListOf(4), ImageIcon(ClassLoader.getSystemResource("images/CaveManor.png")).scaled(1080, 524), 1.20, 871, 1023, 74, 184)
     )
-    var isOnWorldMap = true
-    var gameOver = false
+    var gamestate = "world"
 
     var currentLocation = locations[0]
     var selectLocation = locations[0]
     var travelling = false
     var travelProgress:Double = 0.00
 
-    var orderLikelihood = 0.00
+    private var orderLikelihood = 0.00
 
     var notoriety = 0.50
     var acorns = 0
-    var cash = 1000
-    var globalDifficultyMultiplier = 1.00
+    var cash = 0
+    var highscore = 0
+    private var globalDifficultyMultiplier = 1.00
 
     var instancedDragObject = JLabel()
     var dragtype = ""
@@ -75,7 +77,7 @@ class Game {
 
     fun handleOrderTimer() {
         val randomOrderChance = Random.nextDouble(0.0,3.0)
-        if ((randomOrderChance*globalDifficultyMultiplier)+orderLikelihood > 2.9){
+        if ((randomOrderChance+(globalDifficultyMultiplier*1.5))+orderLikelihood > (2.75+globalDifficultyMultiplier)){
             val possibleLocations = locations.filter { it.currentOrder == null && it.name != "Nut Den" }
             orderLikelihood = 0.00
             if (orders.size < 3) {
@@ -86,7 +88,7 @@ class Game {
 
                 location?.let { orders.add(it.createOrder(globalDifficultyMultiplier)) }
             }
-        }else orderLikelihood += 0.05
+        }else orderLikelihood += 0.015
     }
 
     fun completeOrder(){
@@ -122,6 +124,8 @@ class MainWindow(val game: Game) {
     private val mapImage = ImageIcon(ClassLoader.getSystemResource("images/Map.png")).scaled(1080, 524)
     private val UIbackgroundLabel = JLabel()
     private val UIBackgroundImage = ImageIcon(ClassLoader.getSystemResource("images/UserInterfaceBackground.png")).scaled(1080, 202)
+    private var fullscreenImage = ImageIcon()
+    val fullscreenLabel = JLabel()
 
     //World Map Elements
     private val locationMarker = JLabel()
@@ -212,6 +216,7 @@ class MainWindow(val game: Game) {
         //Background Elements
         gameBackgroundLabel.setBounds(0, 0, 1080, 524)
         UIbackgroundLabel.setBounds(0, 524, 1080, 202)
+        fullscreenLabel.setBounds(0,0,1080,726)
 
         //UI Elements
         locationName.setBounds(890, 550, 300, 30)
@@ -288,6 +293,7 @@ class MainWindow(val game: Game) {
         panel.add(travelPopup, JLayeredPane.DEFAULT_LAYER)
 
         //Background Images, all elements layer over this
+        panel.add(fullscreenLabel, JLayeredPane.DEFAULT_LAYER-1)
         panel.add(gameBackgroundLabel,JLayeredPane.DEFAULT_LAYER-1)
         panel.add(UIbackgroundLabel, JLayeredPane.DEFAULT_LAYER-1)
     }
@@ -377,7 +383,7 @@ class MainWindow(val game: Game) {
     private fun handleBackgroundClick(): MouseListener {
         return object : MouseAdapter() {
             override fun mouseClicked(e: MouseEvent) {
-                if (game.isOnWorldMap && !game.gameOver){ // Blocks checking when in a location
+                if (game.gamestate == "world"){ // Blocks checking when in a location
                     for (location in game.locations){ // Checks if click location is in bounding box of a location
                         if(e.x in location.coordXMin..location.coordXMax && e.y in location.coordYMin..location.coordYMax && !game.travelling){
                             game.selectLocation = location
@@ -388,7 +394,7 @@ class MainWindow(val game: Game) {
             }
 
             override fun mousePressed(e: MouseEvent?) {
-                if (!game.isOnWorldMap && game.currentLocation == game.locations[0]){
+                if (game.gamestate == "location" && game.currentLocation == game.locations[0]){
                     if (seedSpawner.bounds.contains(panel.mousePosition)){
                         game.dragtype = "seed"
                         handleDraggableClick(seedImage, 430)
@@ -400,7 +406,7 @@ class MainWindow(val game: Game) {
             }
 
             override fun mouseReleased(e: MouseEvent?) {
-                if (!game.isOnWorldMap){
+                if (game.gamestate == "location"){
                     if (game.dragtype != ""){
                         exitSeedDrag()
                         for (pot in pots){
@@ -432,7 +438,10 @@ class MainWindow(val game: Game) {
     }
 
     private fun handleLocationClick(){
-        game.isOnWorldMap = !game.isOnWorldMap
+        when(game.gamestate){
+            "world"-> game.gamestate = "location"
+            "location"-> game.gamestate = "world"
+        }
         updateUI()
     }
 
@@ -472,7 +481,7 @@ class MainWindow(val game: Game) {
             "water"->{
                 if (pots[potID].icon == potImages[1]) {
                     pots[potID].icon = potImages[2]
-                    val acorntimer = Timer(3000, null)
+                    val acorntimer = Timer(2000, null)
                     if (!acorntimer.isRunning){
                         pots[potID].icon = potImages[3]
                         acorntimer.addActionListener{ potInteract(potID, acorntimer) }
@@ -510,7 +519,6 @@ class MainWindow(val game: Game) {
         val dx = (endX - initialX).toDouble()
         val dy = (endY - initialY).toDouble()
         val dist = hypot(dx, dy)
-        val stepSize = 2
         val journeySteps = dist / stepSize
 
         game.travelProgress++
@@ -571,66 +579,99 @@ class MainWindow(val game: Game) {
 
     //  ---------------------------------- UPDATE FUNCTION
     fun updateUI() {
-        if (game.isOnWorldMap) {
-            //World Map setup
-            gameBackgroundLabel.icon = mapImage
-            locationName.text = game.selectLocation.name
-            toggleLocationButton.text = "Enter ${game.currentLocation.name}"
-
-            dealerLocation.isVisible = true
-            locationMarker.isVisible = true
-            travelButton.isVisible = game.locations.indexOf(game.selectLocation) in game.currentLocation.adjacentIndex
-
-            //Hides location elements
-            customerSpeech.isVisible = false
-            speechText.isVisible = false
-            orderButton.isVisible = false
-            customerElement.isVisible = false
-            seedSpawner.isVisible = false
-            waterSpawner.isVisible = false
-
-            for (pot in pots) pot.isVisible = false
-
-            //Travelling check
-            if (game.travelling) {
-                travelPopup.isVisible = true
-                travelButton.isVisible = false
-            } else{
-                travelPopup.isVisible = false
-                locationMarker.setBounds((game.selectLocation.coordXMin+game.selectLocation.coordXMax)/2-(MAP_ICON_SIZE/2), game.selectLocation.coordYMin-MAP_ICON_SIZE, MAP_ICON_SIZE, MAP_ICON_SIZE)
-                dealerLocation.setBounds((game.currentLocation.coordXMin+game.currentLocation.coordXMax)/2-(MAP_ICON_SIZE/2), game.currentLocation.coordYMax-MAP_ICON_SIZE, MAP_ICON_SIZE, MAP_ICON_SIZE)
+        when(game.gamestate){
+            "menu"->{
+                fullscreenLabel.isVisible = true
             }
 
-            //Entering location check
-            if (game.currentLocation == game.selectLocation) toggleLocationButton.isVisible = true
-            else toggleLocationButton.isVisible = false
+            "world"->{
+                //World Map setup
+                gameBackgroundLabel.icon = mapImage
+                locationName.text = game.selectLocation.name
+                toggleLocationButton.text = "Enter ${game.currentLocation.name}"
+                fullscreenLabel.isVisible = false
 
-        } else { //Update for locations
-            dealerLocation.isVisible = false
-            locationMarker.isVisible = false
+                dealerLocation.isVisible = true
+                locationMarker.isVisible = true
+                travelButton.isVisible = game.locations.indexOf(game.selectLocation) in game.currentLocation.adjacentIndex
 
-            toggleLocationButton.text = "Exit ${game.currentLocation.name}"
-            gameBackgroundLabel.icon = game.currentLocation.backgroundImage
+                //Hides location elements
+                customerSpeech.isVisible = false
+                speechText.isVisible = false
+                orderButton.isVisible = false
+                customerElement.isVisible = false
+                seedSpawner.isVisible = false
+                waterSpawner.isVisible = false
 
-            when (game.currentLocation){
-                game.locations[0] -> { //Pots and growing tools in nut den
-                     for (pot in pots){
-                         pot.isVisible = true
-                     }
-                     seedSpawner.isVisible = true
-                     waterSpawner.isVisible = true
-                 }
-                else -> { //Elements for customers and orders
-                    speechText.isVisible = game.currentLocation.currentOrder != null
-                    orderButton.isVisible = game.currentLocation.currentOrder != null
-                    orderButton.text = game.currentLocation.currentOrder?.acornNum.toString()
-                    speechText.text = game.currentLocation.currentOrder?.customerSpeech
-                    customerSpeech.isVisible = game.currentLocation.currentOrder != null
-                    customerElement.isVisible = game.currentLocation.currentOrder != null
-                    customerElement.icon = game.currentLocation.currentOrder?.customerIcon
+                for (pot in pots) pot.isVisible = false
+
+                //Travelling check
+                if (game.travelling) {
+                    travelPopup.isVisible = true
+                    travelButton.isVisible = false
+                } else{
+                    travelPopup.isVisible = false
+                    locationMarker.setBounds((game.selectLocation.coordXMin+game.selectLocation.coordXMax)/2-(MAP_ICON_SIZE/2), game.selectLocation.coordYMin-MAP_ICON_SIZE, MAP_ICON_SIZE, MAP_ICON_SIZE)
+                    dealerLocation.setBounds((game.currentLocation.coordXMin+game.currentLocation.coordXMax)/2-(MAP_ICON_SIZE/2), game.currentLocation.coordYMax-MAP_ICON_SIZE, MAP_ICON_SIZE, MAP_ICON_SIZE)
+                }
+
+                //Entering location check
+                if (game.currentLocation == game.selectLocation) toggleLocationButton.isVisible = true
+                else toggleLocationButton.isVisible = false
+            }
+            "location"->{
+                //Update for locations
+                dealerLocation.isVisible = false
+                locationMarker.isVisible = false
+
+                toggleLocationButton.text = "Exit ${game.currentLocation.name}"
+                gameBackgroundLabel.icon = game.currentLocation.backgroundImage
+                fullscreenLabel.isVisible = false
+
+                when (game.currentLocation){
+                    game.locations[0] -> { //Pots and growing tools in nut den
+                        for (pot in pots){
+                            pot.isVisible = true
+                        }
+                        seedSpawner.isVisible = true
+                        waterSpawner.isVisible = true
+                    }
+                    else -> { //Elements for customers and orders
+                        speechText.isVisible = game.currentLocation.currentOrder != null
+                        orderButton.isVisible = game.currentLocation.currentOrder != null
+                        orderButton.text = game.currentLocation.currentOrder?.acornNum.toString()
+                        speechText.text = game.currentLocation.currentOrder?.customerSpeech
+                        customerSpeech.isVisible = game.currentLocation.currentOrder != null
+                        customerElement.isVisible = game.currentLocation.currentOrder != null
+                        customerElement.icon = game.currentLocation.currentOrder?.customerIcon
+                    }
                 }
             }
+
+            "end"->{
+                
+                val cashLabel = JLabel(game.cash.toString())
+                val highscoreLabel = JLabel(game.highscore.toString())
+                val returnButton = JButton()
+
+                cashLabel.setBounds(450,500, 300, 100)
+                highscoreLabel.setBounds(450,595, 300, 100)
+
+                panel.add(cashLabel,JLayeredPane.DEFAULT_LAYER)
+                panel.add(highscoreLabel,JLayeredPane.DEFAULT_LAYER)
+
+                fullscreenLabel.isVisible=true
+                fullscreenLabel.icon=fullscreenImage.scaled(1080,726)
+                cashLabel.font = Font(Font.SANS_SERIF, Font.BOLD, 60)
+                cashLabel.foreground = Color.WHITE
+                highscoreLabel.font = Font(Font.SANS_SERIF, Font.BOLD, 60)
+                highscoreLabel.foreground = Color.WHITE
+
+                panel.revalidate()
+                panel.repaint()
+            }
         }
+
 
         //Global UI
         nutAmount.text = game.acorns.toString()
@@ -659,34 +700,13 @@ class MainWindow(val game: Game) {
         frame.isVisible = true
     }
 
-    private fun endGame(endScreen: ImageIcon){
+    private fun endGame(endScreenIcon: ImageIcon){
         orderDirectorTimer.stop()
         progressbarTimer.stop()
-        game.gameOver = true
-        panel.removeAll()
-
-        val endLabel = JLabel()
-        val cashLabel = JLabel(game.cash.toString())
-        val highscoreLabel = JLabel("0")
-        val returnButton = JButton()
-
-        endLabel.setBounds(0,0,1080,726)
-        cashLabel.setBounds(450,500, 300, 100)
-        highscoreLabel.setBounds(450,595, 300, 100)
-
-        panel.add(cashLabel,JLayeredPane.DEFAULT_LAYER)
-        panel.add(highscoreLabel,JLayeredPane.DEFAULT_LAYER)
-        panel.add(endLabel, JLayeredPane.DEFAULT_LAYER-1)
-
-        endLabel.icon=endScreen.scaled(1080,726)
-        cashLabel.font = Font(Font.SANS_SERIF, Font.BOLD, 60)
-        cashLabel.foreground = Color.WHITE
-        highscoreLabel.font = Font(Font.SANS_SERIF, Font.BOLD, 60)
-        highscoreLabel.foreground = Color.WHITE
-
-
-        panel.revalidate()
-        panel.repaint()
+        game.gamestate = "end"
+        fullscreenImage = endScreenIcon
+        updateUI()
+        saveHighscore(game)
     }
 }
 
@@ -767,12 +787,12 @@ class Order(val difficultyMultiplier:Double, val locationName:String) {
     }
 
     private fun getAcornAmount():Int{
-        val acorns = (Random.nextDouble(0.5, 1.5) * (difficultyMultiplier*difficultyMultiplier*2)).toInt()
+        val acorns = (Random.nextDouble(1.0, 2.0) * (difficultyMultiplier*difficultyMultiplier)).toInt()
         return acorns
     }
 
     private fun getRepAmount():Int{
-        val notoriety = (Random.nextInt(5, 20) * (difficultyMultiplier)).toInt()
+        val notoriety = (Random.nextInt(10, 30) * (difficultyMultiplier)).toInt()
         return notoriety
     }
 

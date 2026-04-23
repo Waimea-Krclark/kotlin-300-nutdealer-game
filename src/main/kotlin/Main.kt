@@ -32,7 +32,6 @@ fun main() {
 
     val game = Game()                 // Get an app state object
     val window = MainWindow(game)    // Spawn the UI, passing in the app state
-
     SwingUtilities.invokeLater { window.show() }
 }
 
@@ -51,7 +50,7 @@ class Game {
         Location("Hole Home", mutableListOf(2, 3, 5), ImageIcon(ClassLoader.getSystemResource("images/HoleHome.png")).scaled(1080, 524), 1.0, 746, 921, 335, 463),
         Location("Cave Manor", mutableListOf(4), ImageIcon(ClassLoader.getSystemResource("images/CaveManor.png")).scaled(1080, 524), 1.20, 871, 1023, 74, 184)
     )
-    var gamestate = "world"
+    var gamestate = "menu"
 
     var currentLocation = locations[0]
     var selectLocation = locations[0]
@@ -105,7 +104,20 @@ class Game {
         else notoriety += (notorietyAmount / 100)
 
         orders.remove(location.currentOrder)
-        location.currentOrder = null
+        location.removeOrder()
+    }
+
+    fun reset(){
+        for (location in locations){
+            orders.remove(location.currentOrder)
+            location.removeOrder()
+        }
+        notoriety = 0.5
+        acorns = 0
+        cash = 0
+        currentLocation = locations[0]
+        selectLocation = locations[0]
+        globalDifficultyMultiplier = 1.00
     }
 }
 
@@ -192,8 +204,6 @@ class MainWindow(val game: Game) {
     private val orderDirectorTimer = Timer(1000, null)
 
     init {
-        orderDirectorTimer.start()
-        progressbarTimer.start()
         for (i in 0 until MAX_ORDERS){
             orderLabels.add(JLabel())
             orderNames.add(JLabel())
@@ -293,7 +303,7 @@ class MainWindow(val game: Game) {
         panel.add(travelPopup, JLayeredPane.DEFAULT_LAYER)
 
         //Background Images, all elements layer over this
-        panel.add(fullscreenLabel, JLayeredPane.DEFAULT_LAYER-1)
+        panel.add(fullscreenLabel, JLayeredPane.DEFAULT_LAYER+1)
         panel.add(gameBackgroundLabel,JLayeredPane.DEFAULT_LAYER-1)
         panel.add(UIbackgroundLabel, JLayeredPane.DEFAULT_LAYER-1)
     }
@@ -377,6 +387,25 @@ class MainWindow(val game: Game) {
         for (i in pots.indices){
             pots[i].addMouseListener(handleMousePot(i))
         }
+    }
+
+    private fun setupGame(){
+        orderDirectorTimer.start()
+        progressbarTimer.start()
+        gameBackgroundLabel.isVisible = true
+        UIbackgroundLabel.isVisible=true
+        notorietyMarker.isVisible=true
+        cash.isVisible=true
+        nutAmount.isVisible=true
+        locationName.isVisible=true
+        nutAmount.setBounds(500, 640, 100, 100)
+        cash.setBounds(770, 640, 100, 100)
+        nutAmount.font = Font(Font.SANS_SERIF, Font.BOLD, 20)
+        nutAmount.foreground = Color.BLACK
+
+        cash.font = Font(Font.SANS_SERIF, Font.BOLD, 20)
+        cash.foreground = Color.BLACK
+        game.reset()
     }
 
     //  ---------------------------------- MOUSE INPUT HANDLERS
@@ -508,6 +537,17 @@ class MainWindow(val game: Game) {
         }
     }
 
+    private fun handleMenu(){
+        game.gamestate = "menu"
+        updateUI()
+    }
+
+    private fun handlePlayGame(){
+        game.gamestate = "world"
+        setupGame()
+        updateUI()
+    }
+
     //  ---------------------------------- TIMER HANDLERS
     private fun handleTravelTween() {
         val initialX = (game.currentLocation.coordXMin+game.currentLocation.coordXMax)/2-(MAP_ICON_SIZE/2)
@@ -582,6 +622,21 @@ class MainWindow(val game: Game) {
         when(game.gamestate){
             "menu"->{
                 fullscreenLabel.isVisible = true
+                fullscreenLabel.icon = ImageIcon(ClassLoader.getSystemResource("images/MenuImage.png")).scaled(1080, 724)
+
+                panel.components.forEach {
+                    component ->  if(component != fullscreenLabel)  component.isVisible = false
+                }
+
+                val playButton = JButton("Play")
+                playButton.setBounds(24, 600, 150, 100)
+                panel.add(playButton)
+                panel.setLayer(playButton, JLayeredPane.DEFAULT_LAYER+2)
+                playButton.addActionListener{
+                    panel.remove(playButton)
+                    handlePlayGame()
+                }
+
             }
 
             "world"->{
@@ -590,6 +645,9 @@ class MainWindow(val game: Game) {
                 locationName.text = game.selectLocation.name
                 toggleLocationButton.text = "Enter ${game.currentLocation.name}"
                 fullscreenLabel.isVisible = false
+                nutAmount.text = game.acorns.toString()
+                cash.text = game.cash.toString()
+                notorietyMarker.setBounds((NOTORIETY_MIN_X + game.notoriety * (NOTORIETY_MAX_X - NOTORIETY_MIN_X)).toInt(), 600, 25, 25)
 
                 dealerLocation.isVisible = true
                 locationMarker.isVisible = true
@@ -624,9 +682,13 @@ class MainWindow(val game: Game) {
                 dealerLocation.isVisible = false
                 locationMarker.isVisible = false
 
+                //Global UI
                 toggleLocationButton.text = "Exit ${game.currentLocation.name}"
                 gameBackgroundLabel.icon = game.currentLocation.backgroundImage
                 fullscreenLabel.isVisible = false
+                nutAmount.text = game.acorns.toString()
+                cash.text = game.cash.toString()
+                notorietyMarker.setBounds((NOTORIETY_MIN_X + game.notoriety * (NOTORIETY_MAX_X - NOTORIETY_MIN_X)).toInt(), 600, 25, 25)
 
                 when (game.currentLocation){
                     game.locations[0] -> { //Pots and growing tools in nut den
@@ -649,34 +711,38 @@ class MainWindow(val game: Game) {
             }
 
             "end"->{
-                
-                val cashLabel = JLabel(game.cash.toString())
-                val highscoreLabel = JLabel(game.highscore.toString())
-                val returnButton = JButton()
+                cash.text = (game.cash.toString())
+                nutAmount.text = game.highscore.toString()
+                val returnButton = JButton("Return to menu")
 
-                cashLabel.setBounds(450,500, 300, 100)
-                highscoreLabel.setBounds(450,595, 300, 100)
+                cash.setBounds(450,500, 300, 100)
+                nutAmount.setBounds(450,595, 300, 100)
+                returnButton.setBounds(850, 595, 180, 100)
 
-                panel.add(cashLabel,JLayeredPane.DEFAULT_LAYER)
-                panel.add(highscoreLabel,JLayeredPane.DEFAULT_LAYER)
+                cash.isVisible = true
+                nutAmount.isVisible=true
+                panel.setLayer(cash, JLayeredPane.DEFAULT_LAYER+2)
+                panel.setLayer(nutAmount, JLayeredPane.DEFAULT_LAYER+2)
+                panel.add(returnButton)
+                panel.setLayer(returnButton, JLayeredPane.DEFAULT_LAYER+2)
 
                 fullscreenLabel.isVisible=true
                 fullscreenLabel.icon=fullscreenImage.scaled(1080,726)
-                cashLabel.font = Font(Font.SANS_SERIF, Font.BOLD, 60)
-                cashLabel.foreground = Color.WHITE
-                highscoreLabel.font = Font(Font.SANS_SERIF, Font.BOLD, 60)
-                highscoreLabel.foreground = Color.WHITE
+                cash.font = Font(Font.SANS_SERIF, Font.BOLD, 60)
+                cash.foreground = Color.WHITE
+                nutAmount.font = Font(Font.SANS_SERIF, Font.BOLD, 60)
+                nutAmount.foreground = Color.WHITE
+
+                returnButton.addActionListener{
+                    panel.remove(returnButton)
+                    handleMenu()
+                }
 
                 panel.revalidate()
                 panel.repaint()
             }
+
         }
-
-
-        //Global UI
-        nutAmount.text = game.acorns.toString()
-        cash.text = game.cash.toString()
-        notorietyMarker.setBounds((NOTORIETY_MIN_X + game.notoriety * (NOTORIETY_MAX_X - NOTORIETY_MIN_X)).toInt(), 600, 25, 25)
 
         for (i in 0 until MAX_ORDERS){
             val visible = i < game.orders.size
@@ -705,8 +771,9 @@ class MainWindow(val game: Game) {
         progressbarTimer.stop()
         game.gamestate = "end"
         fullscreenImage = endScreenIcon
-        updateUI()
         saveHighscore(game)
+        updateUI()
+
     }
 }
 
@@ -716,6 +783,10 @@ class Location(val name: String, val adjacentIndex: MutableList<Int>, val backgr
     fun createOrder(difficultyMultiplier:Double): Order{
         currentOrder = currentOrder ?: Order(difficultyMultiplier, name)
         return currentOrder!!
+    }
+
+    fun removeOrder(){
+        currentOrder = null
     }
 }
 

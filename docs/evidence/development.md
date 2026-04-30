@@ -74,4 +74,21 @@ Orders are now fully functional with creation, nut growing, and handing them ove
 
 ---
 
+## Date: 25/04/2026
 
+Orders now give notoriety, added two end game states for if the notoriety reaches 0 or 100.
+
+![HomelessEnding.png](screenshots/HomelessEnding.png)
+![JailEnding.png](screenshots/JailEnding.png)
+
+---
+
+## Date: 1/05/2026
+
+Added a highscore system that reads and writes to a file, and displays in the end game, as well as a menu and a tutorial. 
+To add the end games, tutorial and menu, remade the gamestate selection to use an Enum to make switching easier to do and more dynamic. 
+
+![Highscore.png](screenshots/Highscore.png)
+![MenuTutorial.gif](screenshots/MenuTutorial.gif)
+
+---

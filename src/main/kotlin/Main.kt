@@ -11,15 +11,14 @@ import kotlin.math.hypot
 import kotlin.random.Random
 import kotlin.system.exitProcess
 
-
 //CONSTANTS
 const val MAP_ICON_SIZE = 70
-const val MAX_ORDERS = 3 //Used for testing keep on 3 otherwise won't work with current graphical assets
+const val MAX_ORDERS = 3
 const val NOTORIETY_MIN_X = 331
 const val NOTORIETY_MAX_X = 831
 const val ACORN_VALUE = 100
-const val NOTORIETY_PASSIVE_DECREASE = 0.0012//0.0012
-const val stepSize = 2
+const val NOTORIETY_PASSIVE_DECREASE = 0.0012 //0.0012 default
+const val STEP_SIZE = 2
 
 //Scaling for images
 fun ImageIcon.scaled(width: Int, height: Int): ImageIcon = ImageIcon(image.getScaledInstance(width, height, Image.SCALE_SMOOTH))
@@ -59,6 +58,7 @@ class Game {
 
     //Create and set game variables
     var gamestate = GameState.MENU
+    var pageIndex = 0
 
     var currentLocation = locations[0]
     var selectLocation = locations[0]
@@ -96,7 +96,7 @@ class Game {
             //Gets valid locations to create an order at
             val possibleLocations = locations.filter { it.currentOrder == null && it.name != "Nut Den" }
             orderLikelihood = 0.00
-            if (orders.size < 3) {
+            if (orders.size < MAX_ORDERS) {
                 //Weighted random location chooser, higher the difficulty more likely to create at further away locations (higher difficultyWeight)
                 val randomSeed = Random.nextDouble(0.2, 1.0)
                 val weightedSeed = (randomSeed * globalDifficultyMultiplier)
@@ -164,6 +164,11 @@ class MainWindow(val game: Game) {
     private val backgroundUIImage = ImageIcon(ClassLoader.getSystemResource("images/UserInterfaceBackground.png")).scaled(1080, 202)
     private var fullscreenImage = ImageIcon()
     private val fullscreenLabel = JButton()
+    private val tutorialPages = listOf(
+        ImageIcon(ClassLoader.getSystemResource("images/Tutorial1.png")).scaled(1080, 726),
+        ImageIcon(ClassLoader.getSystemResource("images/Tutorial2.png")).scaled(1080, 726),
+        ImageIcon(ClassLoader.getSystemResource("images/Tutorial3.png")).scaled(1080, 726)
+    )
 
     //World Map Elements
     private val locationMarker = JLabel()
@@ -431,6 +436,7 @@ class MainWindow(val game: Game) {
         gameBackgroundLabel.addMouseListener( handleBackgroundClick())
 
         //Buttons
+        fullscreenLabel.addActionListener{ handleTutorialClick() }
         travelButton.addActionListener{ handleTravelClick() }
         toggleLocationButton.addActionListener{ handleLocationClick() }
         orderButton.addActionListener { handleOrderHandover() }
@@ -466,6 +472,15 @@ class MainWindow(val game: Game) {
         cash.foreground = Color.BLACK
 
         game.reset()
+    }
+
+    private fun endGame(endScreenIcon: ImageIcon){//Stops game timers and sends the player to the end screen
+        orderDirectorTimer.stop()
+        progressbarTimer.stop()
+        game.gamestate = GameState.ENDGAME
+        fullscreenImage = endScreenIcon
+        saveHighscore(game) //Writes score to a file if it is a new highscore, otherwise retrieves the highscore
+        updateUI()
     }
 
     //  ---------------------------------- MOUSE INPUT HANDLERS
@@ -582,10 +597,24 @@ class MainWindow(val game: Game) {
         seedDragTimer.stop()
     }
 
-    /*
-    * Handles logic for pot interaction for drag and drops and clicking
-    * */
-    private fun handlePotClick(potID: Int,type:DragType){
+    private fun handleTutorialClick(){
+        //Cycles through tutorial pages then returns to menu at the end
+        if (game.gamestate == GameState.TUTORIAL){
+            game.pageIndex+=1
+            if (game.pageIndex < tutorialPages.size){
+                updateUI()
+            }else {
+                game.gamestate = GameState.MENU
+                game.pageIndex = 0
+                updateUI()
+            }
+        }
+    }
+
+    private fun handlePotClick(potID: Int, type: DragType){
+        /*
+        * Handles logic for pot interaction for drag and drops and clicking using an enum for the different interactions on the pot
+        * */
         when(type){
             DragType.SEED->{//Sets pot state to the planted state
                 if (pots[potID].icon == potImages[0]){
@@ -595,11 +624,11 @@ class MainWindow(val game: Game) {
             DragType.WATER->{//Sets pot to the watered state if a seed has been planted
                 if (pots[potID].icon == potImages[1]) {
                     pots[potID].icon = potImages[2]
-                    val acorntimer = Timer(2000, null)//Creates and starts a growing timer
-                    if (!acorntimer.isRunning){
+                    val acornTimer = Timer(2000, null)//Creates and starts a growing timer
+                    if (!acornTimer.isRunning){
                         pots[potID].icon = potImages[3]
-                        acorntimer.addActionListener{ potInteract(potID, acorntimer) }
-                        acorntimer.restart()
+                        acornTimer.addActionListener{ potInteract(potID, acornTimer) }
+                        acornTimer.restart()
                     }
                 }
             }
@@ -645,7 +674,7 @@ class MainWindow(val game: Game) {
         val dx = (endX - initialX).toDouble()
         val dy = (endY - initialY).toDouble()
         val dist = hypot(dx, dy)
-        val journeySteps = dist / stepSize
+        val journeySteps = dist / STEP_SIZE
 
         game.travelProgress++
 
@@ -676,13 +705,14 @@ class MainWindow(val game: Game) {
         updateUI()
     }
 
-    /*
-    * Function for handling progress bar for both notoriety and order timers.
-    *
-    * Reduces notoriety, checks if game should end
-    * and also updates and checks each orders timer and progress bar element
-    * */
     private fun handleProgressbar(){
+        /*
+        * Function for handling progress bar for both notoriety and order timers.
+        *
+        * Reduces notoriety, checks if game should end
+        * and also updates and checks each orders timer and progress bar element
+        * */
+
         game.notoriety-= NOTORIETY_PASSIVE_DECREASE//Reduces Notoriety slightly over time
         notorietyMarker.setBounds((NOTORIETY_MIN_X + game.notoriety * (NOTORIETY_MAX_X - NOTORIETY_MIN_X)).toInt(), 600, 25, 25)
 
@@ -711,7 +741,7 @@ class MainWindow(val game: Game) {
         }
     }
 
-    //  ---------------------------------- UPDATE FUNCTION
+    //  ---------------------------------- UPDATE FUNCTIONS
     /**
     * Checks Game State and calls update function for specific State, and updates order visibility and data
     * */
@@ -746,6 +776,7 @@ class MainWindow(val game: Game) {
             orderRepAmount[i].text = game.orders[i].notorietyAmount.toString()
         }
     }
+
     /*
     * Main menu update function, hides every component, makes the fullscreen label visible and creates the play button
     * */
@@ -928,43 +959,18 @@ class MainWindow(val game: Game) {
     }
 
     private fun tutorialUpdate(){
-        val pages = listOf(
-            ImageIcon(ClassLoader.getSystemResource("images/Tutorial1.png")).scaled(1080, 726),
-            ImageIcon(ClassLoader.getSystemResource("images/Tutorial2.png")).scaled(1080, 726),
-            ImageIcon(ClassLoader.getSystemResource("images/Tutorial3.png")).scaled(1080, 726)
-        )
-        var pageIndex = 0
-        fullscreenLabel.icon = pages[pageIndex]
-        fullscreenLabel.addActionListener{
-            pageIndex+=1
-            println(pageIndex)
-            if (pageIndex < pages.size){
-                fullscreenLabel.icon = pages[pageIndex]
-            }else {
-                game.gamestate = GameState.MENU
-                updateUI()
-            }
-        }
-
+        //Updates to current tutorial page
+        fullscreenLabel.icon = tutorialPages[game.pageIndex]
     }
+
     fun show() {
         frame.isVisible = true //Shows window
-    }
-
-    private fun endGame(endScreenIcon: ImageIcon){//Stops game timers and sends the player to the end screen
-        orderDirectorTimer.stop()
-        progressbarTimer.stop()
-        game.gamestate = GameState.ENDGAME
-        fullscreenImage = endScreenIcon
-        saveHighscore(game) //Writes score to a file if it is a new highscore, otherwise retrieves the highscore
-        updateUI()
-
     }
 }
 
 class Location(val name: String, val adjacentIndex: MutableList<Int>, val backgroundImage: ImageIcon, val difficultyWeight: Double, val coordXMin: Int, val coordXMax: Int, val coordYMin: Int, val coordYMax: Int) {
     /**
-    * The location class handles order storing, and uses a lot of parameters for the locations
+    * The location class handles order storing and control, and uses a lot of parameters for the locations
     *
     * Adjacent locations for travelling
     * Difficulty weight for location distances for orders

@@ -109,7 +109,6 @@ class Game {
     * gets valid locations and chooses best one based on difficulty to add an order do and then creates an order
     * */
     fun handleOrderTimer() { //Function for creating orders
-        println(orderLikelihood)
         //Difficulty scaled random order chance
         val randomOrderChance = Random.nextDouble(0.0,3.0)
         if ((randomOrderChance+(globalDifficultyMultiplier*1.2))+orderLikelihood > (2.75+globalDifficultyMultiplier)){
@@ -241,7 +240,7 @@ class MainWindow(val game: Game) {
     private val cash = JLabel(game.cash.toString())
 
     private val notorietyMarker = JLabel()
-    private val notorietyImage = ImageIcon(ClassLoader.getSystemResource("images/noterietyMarker.png")).scaled(25, 25)
+    private val notorietyImage = ImageIcon(ClassLoader.getSystemResource("images/NoterietyMarker.png")).scaled(25, 25)
 
     private val orderLabels = mutableListOf<JLabel>()
     private val orderNames = mutableListOf<JLabel>()
@@ -485,6 +484,9 @@ class MainWindow(val game: Game) {
         cash.isVisible=true
         nutAmount.isVisible=true
         locationName.isVisible=true
+        for (pot in pots){
+            pot.icon = potImages[0]
+        }
 
         //resets the nut amount and cash elements
         nutAmount.setBounds(500, 640, 100, 100)

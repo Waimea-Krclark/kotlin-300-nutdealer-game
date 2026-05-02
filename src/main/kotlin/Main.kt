@@ -535,25 +535,27 @@ class MainWindow(val game: Game) {
             * Mouse up function for handling the drag operation for growing
             * */
             override fun mouseReleased(e: MouseEvent) {
-                if (game.gamestate == GameState.LOCATION){
-                    if (game.dragtype != DragType.NONE){
-                        exitSeedDrag()
-                        for (pot in pots){
-                            if (pot.bounds.contains(panel.mousePosition)){
-                                handlePotClick(pots.indexOf(pot), game.dragtype)
+                if (panel.mousePosition != null) {
+                    if (game.gamestate == GameState.LOCATION) {
+                        if (game.dragtype != DragType.NONE) {
+                            exitSeedDrag()
+                            for (pot in pots) {
+                                if (pot.bounds.contains(panel.mousePosition)) {
+                                    handlePotClick(pots.indexOf(pot), game.dragtype)
+                                }
                             }
+                            game.dragtype = DragType.NONE
                         }
-                        game.dragtype = DragType.NONE
-                    }
-                } else if (game.gamestate == GameState.WORLD){
-                    /*
+                    } else if (game.gamestate == GameState.WORLD) {
+                        /*
                     * Mouse click on world map for location selection
                     * */
-                    for (location in game.locations){ // Checks if click location is in bounding box of a location
-                        if(e.x in location.coordXMin..location.coordXMax && e.y in location.coordYMin..location.coordYMax && !game.travelling){
-                            game.selectLocation = location
-                            playSound(ClassLoader.getSystemResourceAsStream("sounds/location.wav")!!.readBytes())
-                            updateUI()
+                        for (location in game.locations) { // Checks if click location is in bounding box of a location
+                            if (e.x in location.coordXMin..location.coordXMax && e.y in location.coordYMin..location.coordYMax && !game.travelling) {
+                                game.selectLocation = location
+                                playSound(ClassLoader.getSystemResourceAsStream("sounds/location.wav")!!.readBytes())
+                                updateUI()
+                            }
                         }
                     }
                 }
@@ -608,11 +610,9 @@ class MainWindow(val game: Game) {
     private fun handleDrag(){
         //Gets the mouse position
         val mouseLoc = panel.mousePosition
-        try {//Set the instanced object to the mouse position
+        if (panel.mousePosition != null) {//Set the instanced object to the mouse position if the mouse is on the screen
             game.instancedDragObject.setBounds(mouseLoc.x - seedImage.iconWidth / 2, mouseLoc.y - seedImage.iconWidth / 2, 100, 100)
-        } catch (e:NullPointerException){//If mouse out of bounds of the screen, destroy the object.
-            exitSeedDrag()
-        }
+        } else exitSeedDrag()
     }
 
     private fun exitSeedDrag(){
@@ -713,7 +713,7 @@ class MainWindow(val game: Game) {
             travelTimer.stop()
             game.travelling = false
             game.currentLocation = game.selectLocation
-            stopSound(sound)
+            if (game.gamestate == GameState.WORLD) stopSound(sound)
             updateUI()
         } else {//Travels a step toward destination
             val newX = initialX + (dx / journeySteps) * game.travelProgress
@@ -751,11 +751,13 @@ class MainWindow(val game: Game) {
         if (game.notoriety <= 0){ //Ends game with homeless ending if notoriety = 0
             game.notoriety = 0.0
             notorietyMarker.setBounds((NOTORIETY_MIN_X + game.notoriety * (NOTORIETY_MAX_X - NOTORIETY_MIN_X)).toInt(), 600, 25, 25)
+            stopSound(referenceableSound)
             endGame(ImageIcon(ClassLoader.getSystemResource("images/HomelessEnding.png")))
             referenceableSound= playSound(ClassLoader.getSystemResourceAsStream("sounds/homeless.wav")!!.readBytes())
         }else if (game.notoriety >= 1){ //Ends game with jail ending if notoriety = 1
             game.notoriety = 1.0
             notorietyMarker.setBounds((NOTORIETY_MIN_X + game.notoriety * (NOTORIETY_MAX_X - NOTORIETY_MIN_X)).toInt(), 600, 25, 25)
+            stopSound(referenceableSound)
             endGame(ImageIcon(ClassLoader.getSystemResource("images/JailEnding.png")))
             referenceableSound= playSound(ClassLoader.getSystemResourceAsStream("sounds/jail.wav")!!.readBytes())
         }

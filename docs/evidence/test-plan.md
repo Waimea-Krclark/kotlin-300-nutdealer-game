@@ -38,7 +38,7 @@ Statement detailing what should happen. Statement detailing what should happen. 
 
 ---
 
-## nut growing
+## nut growing (array, drag drop, screen bounds)
 
 Example test description. Example test description. Example test description. Example test description. Example test description. Example test description.
 
@@ -52,7 +52,7 @@ Statement detailing what should happen. Statement detailing what should happen. 
 
 ---
 
-## orders (especially current system, that adds lag)
+## orders (especially current system, that adds lag, null anmd invalid testing)
 
 Example test description. Example test description. Example test description. Example test description. Example test description. Example test description.
 

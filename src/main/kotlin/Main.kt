@@ -5,6 +5,9 @@ import java.awt.Image
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 import java.awt.event.MouseListener
+import javax.sound.sampled.AudioSystem
+import javax.sound.sampled.Clip
+import javax.sound.sampled.LineEvent
 import javax.swing.*
 import kotlin.math.abs
 import kotlin.math.hypot
@@ -40,6 +43,22 @@ enum class GameState{ //Creates an Enumeration that can be used to define game s
 
 enum class DragType{ //Drag type enum for different action with the drag/drop instances
     NONE, SEED, WATER
+}
+
+fun playSound(bytes: ByteArray): Clip {
+    // The sound bytes are passed to an audio stream thread
+    val stream = AudioSystem.getAudioInputStream(bytes.inputStream())
+    val sound = AudioSystem.getClip().apply {
+        open(stream)
+        start()
+        addLineListener { if (it.type == LineEvent.Type.STOP) close() }
+    }
+    return sound
+}
+
+fun stopSound(currentClip:Clip) {
+    currentClip.stop()
+    currentClip.close()
 }
 
 /**
@@ -90,9 +109,10 @@ class Game {
     * gets valid locations and chooses best one based on difficulty to add an order do and then creates an order
     * */
     fun handleOrderTimer() { //Function for creating orders
+        println(orderLikelihood)
         //Difficulty scaled random order chance
         val randomOrderChance = Random.nextDouble(0.0,3.0)
-        if ((randomOrderChance+(globalDifficultyMultiplier*1.5))+orderLikelihood > (2.75+globalDifficultyMultiplier)){
+        if ((randomOrderChance+(globalDifficultyMultiplier*1.2))+orderLikelihood > (2.75+globalDifficultyMultiplier)){
             //Gets valid locations to create an order at
             val possibleLocations = locations.filter { it.currentOrder == null && it.name != "Nut Den" }
             orderLikelihood = 0.00
@@ -105,7 +125,7 @@ class Game {
                 //Safely creates on order at that location if there isn't one
                 location?.let { orders.add(it.createOrder(globalDifficultyMultiplier)) }
             }
-        }else orderLikelihood += 0.015
+        }else if(orders.size < MAX_ORDERS) orderLikelihood += 0.015
     }
 
     /**
@@ -115,6 +135,8 @@ class Game {
         acorns -= currentLocation.currentOrder?.acornNum ?: 0
         cash += currentLocation.currentOrder?.acornNum?.times(ACORN_VALUE) ?: 0
         globalDifficultyMultiplier += Random.nextDouble(0.05, 0.15)
+        playSound(ClassLoader.getSystemResourceAsStream("sounds/squirrel.wav")!!.readBytes())
+        playSound(ClassLoader.getSystemResourceAsStream("sounds/winOrder.wav")!!.readBytes())
         removeOrder(currentLocation, false)
     }
 
@@ -169,6 +191,7 @@ class MainWindow(val game: Game) {
         ImageIcon(ClassLoader.getSystemResource("images/Tutorial2.png")).scaled(1080, 726),
         ImageIcon(ClassLoader.getSystemResource("images/Tutorial3.png")).scaled(1080, 726)
     )
+    var referenceableSound = playSound(ClassLoader.getSystemResourceAsStream("sounds/menuMusic.wav")!!.readBytes())
 
     //World Map Elements
     private val locationMarker = JLabel()
@@ -442,7 +465,7 @@ class MainWindow(val game: Game) {
         orderButton.addActionListener { handleOrderHandover() }
 
         //Timer callers
-        travelTimer.addActionListener{ handleTravelTween() }
+        travelTimer.addActionListener{ handleTravelTween(referenceableSound) }
         seedDragTimer.addActionListener{ handleDrag() }
         orderDirectorTimer.addActionListener { handleOrderTimer() }
         progressbarTimer.addActionListener { handleProgressbar() }
@@ -497,6 +520,7 @@ class MainWindow(val game: Game) {
                     for (location in game.locations){ // Checks if click location is in bounding box of a location
                         if(e.x in location.coordXMin..location.coordXMax && e.y in location.coordYMin..location.coordYMax && !game.travelling){
                             game.selectLocation = location
+                            playSound(ClassLoader.getSystemResourceAsStream("sounds/location.wav")!!.readBytes())
                             updateUI()
                         }
                     }
@@ -510,9 +534,11 @@ class MainWindow(val game: Game) {
                 if (game.gamestate == GameState.LOCATION && game.currentLocation == game.locations[0]){
                     if (seedSpawner.bounds.contains(panel.mousePosition)){
                         game.dragtype = DragType.SEED
+                        playSound(ClassLoader.getSystemResourceAsStream("sounds/location.wav")!!.readBytes())
                         handleDraggableClick(seedImage, 430)
                     } else if (waterSpawner.bounds.contains(panel.mousePosition)){
                         game.dragtype = DragType.WATER
+                        playSound(ClassLoader.getSystemResourceAsStream("sounds/location.wav")!!.readBytes())
                         handleDraggableClick(waterImage,550)
                     }
                 }
@@ -554,6 +580,8 @@ class MainWindow(val game: Game) {
         //Starts the nutdealer travelling timer
         game.travelling = true
         game.travelProgress = 0.00
+        referenceableSound = playSound(ClassLoader.getSystemResourceAsStream("sounds/travel.wav")!!.readBytes())
+
         travelTimer.start()
         updateUI()
     }
@@ -562,9 +590,9 @@ class MainWindow(val game: Game) {
         when(game.gamestate){ //Toggles the gamestate between the world map and locations
             GameState.WORLD-> game.gamestate = GameState.LOCATION
             GameState.LOCATION-> game.gamestate = GameState.WORLD
-
             else -> {} //Other two game states aren't used here so can be ignored
         }
+        playSound(ClassLoader.getSystemResourceAsStream("sounds/door.wav")!!.readBytes())
         updateUI()
     }
 
@@ -592,6 +620,7 @@ class MainWindow(val game: Game) {
     private fun exitSeedDrag(){
         //Stops the timer and removes the instance
         panel.remove(game.instancedDragObject)
+        playSound(ClassLoader.getSystemResourceAsStream("sounds/location.wav")!!.readBytes())
         panel.revalidate()
         panel.repaint()
         seedDragTimer.stop()
@@ -600,6 +629,7 @@ class MainWindow(val game: Game) {
     private fun handleTutorialClick(){
         //Cycles through tutorial pages then returns to menu at the end
         if (game.gamestate == GameState.TUTORIAL){
+            playSound(ClassLoader.getSystemResourceAsStream("sounds/button.wav")!!.readBytes())
             game.pageIndex+=1
             if (game.pageIndex < tutorialPages.size){
                 updateUI()
@@ -619,11 +649,13 @@ class MainWindow(val game: Game) {
             DragType.SEED->{//Sets pot state to the planted state
                 if (pots[potID].icon == potImages[0]){
                     pots[potID].icon = potImages[1]
+                    playSound(ClassLoader.getSystemResourceAsStream("sounds/seed.wav")!!.readBytes())
                 }
             }
             DragType.WATER->{//Sets pot to the watered state if a seed has been planted
                 if (pots[potID].icon == potImages[1]) {
                     pots[potID].icon = potImages[2]
+                    playSound(ClassLoader.getSystemResourceAsStream("sounds/water.wav")!!.readBytes())
                     val acornTimer = Timer(2000, null)//Creates and starts a growing timer
                     if (!acornTimer.isRunning){
                         pots[potID].icon = potImages[3]
@@ -636,6 +668,7 @@ class MainWindow(val game: Game) {
                 if (pots[potID].icon == potImages.last()){
                     pots[potID].icon = potImages[0]
                     game.harvestAcorn()
+                    playSound(ClassLoader.getSystemResourceAsStream("sounds/acorn.wav")!!.readBytes())
                     updateUI()
                 }
             }
@@ -663,7 +696,7 @@ class MainWindow(val game: Game) {
     }
 
     //  ---------------------------------- TIMER HANDLERS
-    private fun handleTravelTween() {
+    private fun handleTravelTween(sound: Clip) {
         //Start and end locations for travelling
         val initialX = (game.currentLocation.coordXMin+game.currentLocation.coordXMax)/2-(MAP_ICON_SIZE/2)
         val initialY = game.currentLocation.coordYMax-MAP_ICON_SIZE
@@ -682,6 +715,7 @@ class MainWindow(val game: Game) {
             travelTimer.stop()
             game.travelling = false
             game.currentLocation = game.selectLocation
+            stopSound(sound)
             updateUI()
         } else {//Travels a step toward destination
             val newX = initialX + (dx / journeySteps) * game.travelProgress
@@ -720,10 +754,12 @@ class MainWindow(val game: Game) {
             game.notoriety = 0.0
             notorietyMarker.setBounds((NOTORIETY_MIN_X + game.notoriety * (NOTORIETY_MAX_X - NOTORIETY_MIN_X)).toInt(), 600, 25, 25)
             endGame(ImageIcon(ClassLoader.getSystemResource("images/HomelessEnding.png")))
+            referenceableSound= playSound(ClassLoader.getSystemResourceAsStream("sounds/homeless.wav")!!.readBytes())
         }else if (game.notoriety >= 1){ //Ends game with jail ending if notoriety = 1
             game.notoriety = 1.0
             notorietyMarker.setBounds((NOTORIETY_MIN_X + game.notoriety * (NOTORIETY_MAX_X - NOTORIETY_MIN_X)).toInt(), 600, 25, 25)
             endGame(ImageIcon(ClassLoader.getSystemResource("images/JailEnding.png")))
+            referenceableSound= playSound(ClassLoader.getSystemResourceAsStream("sounds/jail.wav")!!.readBytes())
         }
 
         for (location in game.locations){
@@ -733,6 +769,7 @@ class MainWindow(val game: Game) {
                 orderTimerProgress[orderIndex].value = location.currentOrder?.timerVal ?: 100 //Updates the progress bar
                 if(orderTimerProgress[orderIndex].value <= 0){ //Removes order when timer reaches 0
                     orderTimerProgress[orderIndex].value = 100
+                    playSound(ClassLoader.getSystemResourceAsStream("sounds/failOrder.wav")!!.readBytes())
                     game.removeOrder(location,true)
                     handleProgressbar()
                     updateUI()
@@ -817,6 +854,8 @@ class MainWindow(val game: Game) {
         quitButton.setFocusPainted(false)
 
         playButton.addActionListener{ //Starts game and removes buttons
+            playSound(ClassLoader.getSystemResourceAsStream("sounds/button.wav")!!.readBytes())
+            stopSound(referenceableSound)
             panel.remove(playButton)
             panel.remove(tutorialButton)
             panel.remove(quitButton)
@@ -824,6 +863,7 @@ class MainWindow(val game: Game) {
         }
 
         tutorialButton.addActionListener{ //Starts tutorial
+            playSound(ClassLoader.getSystemResourceAsStream("sounds/button.wav")!!.readBytes())
             panel.remove(playButton)
             panel.remove(tutorialButton)
             panel.remove(quitButton)
@@ -832,6 +872,7 @@ class MainWindow(val game: Game) {
         }
 
         quitButton.addActionListener{
+            playSound(ClassLoader.getSystemResourceAsStream("sounds/button.wav")!!.readBytes())
             exitProcess(0)
         }
     }
@@ -951,6 +992,9 @@ class MainWindow(val game: Game) {
 
         returnButton.addActionListener{ //Returns to menu and removes button
             panel.remove(returnButton)
+            stopSound(referenceableSound)
+            playSound(ClassLoader.getSystemResourceAsStream("sounds/button.wav")!!.readBytes())
+            referenceableSound = playSound(ClassLoader.getSystemResourceAsStream("sounds/menuMusic.wav")!!.readBytes())
             handleMenu()
         }
 
@@ -981,6 +1025,7 @@ class Location(val name: String, val adjacentIndex: MutableList<Int>, val backgr
 
     fun createOrder(difficultyMultiplier:Double): Order{ //Creates an order if there isn't one
         currentOrder = currentOrder ?: Order(difficultyMultiplier, name)
+        playSound(ClassLoader.getSystemResourceAsStream("sounds/notification.wav")!!.readBytes())
         return currentOrder!!
     }
 

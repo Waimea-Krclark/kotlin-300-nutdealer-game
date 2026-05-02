@@ -515,21 +515,6 @@ class MainWindow(val game: Game) {
         * */
         return object : MouseAdapter() {
             /*
-            * Mouse click on world map for location selection
-            * */
-            override fun mouseClicked(e: MouseEvent) {
-                if (game.gamestate == GameState.WORLD){
-                    for (location in game.locations){ // Checks if click location is in bounding box of a location
-                        if(e.x in location.coordXMin..location.coordXMax && e.y in location.coordYMin..location.coordYMax && !game.travelling){
-                            game.selectLocation = location
-                            playSound(ClassLoader.getSystemResourceAsStream("sounds/location.wav")!!.readBytes())
-                            updateUI()
-                        }
-                    }
-                }
-            }
-
-            /*
             * Mouse down function for handling the drag operation for growing
             * */
             override fun mousePressed(e: MouseEvent?) {
@@ -549,7 +534,7 @@ class MainWindow(val game: Game) {
             /*
             * Mouse up function for handling the drag operation for growing
             * */
-            override fun mouseReleased(e: MouseEvent?) {
+            override fun mouseReleased(e: MouseEvent) {
                 if (game.gamestate == GameState.LOCATION){
                     if (game.dragtype != DragType.NONE){
                         exitSeedDrag()
@@ -559,6 +544,17 @@ class MainWindow(val game: Game) {
                             }
                         }
                         game.dragtype = DragType.NONE
+                    }
+                } else if (game.gamestate == GameState.WORLD){
+                    /*
+                    * Mouse click on world map for location selection
+                    * */
+                    for (location in game.locations){ // Checks if click location is in bounding box of a location
+                        if(e.x in location.coordXMin..location.coordXMax && e.y in location.coordYMin..location.coordYMax && !game.travelling){
+                            game.selectLocation = location
+                            playSound(ClassLoader.getSystemResourceAsStream("sounds/location.wav")!!.readBytes())
+                            updateUI()
+                        }
                     }
                 }
             }
@@ -570,7 +566,7 @@ class MainWindow(val game: Game) {
         * Handles click on pots normally, without any special drag drop operation
         * */
         return object : MouseAdapter() {
-            override fun mouseClicked(e: MouseEvent) {
+            override fun mouseReleased(e: MouseEvent) {
                 //When clicked normally, interacts with clicked on pot
                 handlePotClick(i,DragType.NONE)
             }

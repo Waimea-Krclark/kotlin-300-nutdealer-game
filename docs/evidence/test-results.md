@@ -4,9 +4,9 @@ The test results show the actual outcome of the testing, following the [Test Pla
 
 ---
 
-## Example Test Name
+## Testing Bounding Boxes on Locations (Boundary)
 
-Example test description. Example test description.Example test description. Example test description.Example test description. Example test description.
+I tested the location bounds on each location of the world map for selecting locations, using bounding boxes and the mouse position.
 
 ### Test Data Used
 

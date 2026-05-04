@@ -10,7 +10,21 @@ Terminology:
 
 ---
 
-## Testing Bounding Boxes on Locations
+## Testing Bounding Boxes on Locations (Boundary)
+
+I am going to test the world map location selecting, which is done by checking if the mouse is in the location's defined boundary and selecting the clicked on location.
+
+### Test Data To Use
+
+The mouse location on click and the bounds of each location. I will try clicking in a lot of different parts of the map to see the accuracy and consistency.
+
+### Expected Test Result
+
+I expect that when clicking on a location, it will correctly select the right location. If clicking outside of a location it should do nothing, and stay selected on the same location it was on previously.
+
+---
+
+## Testing Travelling to locations (Valid)
 
 Example test description. Example test description. Example test description. Example test description. Example test description. Example test description.
 
@@ -24,21 +38,7 @@ Statement detailing what should happen. Statement detailing what should happen. 
 
 ---
 
-## testing travelling
-
-Example test description. Example test description. Example test description. Example test description. Example test description. Example test description.
-
-### Test Data To Use
-
-Details of test data and reasons for selection. Details of test data and reasons for selection. Details of test data and reasons for selection.
-
-### Expected Test Result
-
-Statement detailing what should happen. Statement detailing what should happen. Statement detailing what should happen. Statement detailing what should happen.
-
----
-
-## nut growing (array, drag drop, screen bounds)
+## Testing Nut Growing functionality (Boundary)(Invalid)
 
 Example test description. Example test description. Example test description. Example test description. Example test description. Example test description.
 

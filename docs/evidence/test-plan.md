@@ -24,7 +24,7 @@ I expect that when clicking on a location, it will correctly select the right lo
 
 ---
 
-## Testing Travelling to locations (Valid) (Invalid) (Boundary)
+## Testing Travelling to locations (Gameplay, UI, Valid, Invalid, Boundary)
 
 I am going to test the travelling mechanics, which creates an animated interpolation between the current location and the selected one with the user controlling this with buttons. 
 
@@ -38,72 +38,74 @@ The user inputs should be handled properly, starting the animation and doing any
 
 ---
 
-## Testing nut growing functionality (Boundary)(Invalid)
+## Testing nut growing functionality (Gameplay, UI, Boundary, Invalid)
 
 Testing the full mechanics for growing the nuts. The instanced drag and drop functions and the issues with screen boundaries and invalid objects with that, as well as the actual pots and the growth stages and harvesting.
 
 ### Test Data To Use
 
-Using the systems to grow nuts, trying multiple different
+Using the systems to grow nuts, trying multiple different interactions to test how the system handles the drag and drop, as well as the mouse interactions.
 
 ### Expected Test Result
 
-Statement detailing what should happen. Statement detailing what should happen. Statement detailing what should happen. Statement detailing what should happen.
+The drag and drop function should create an object the mouse can drag around, and it should handle it correctly with the mouse position, not throwing errors and instead safely deleting the object on invalid inputs\boundaries. 
 
 ---
 
-## Testing order creation (Invalid) 
+## Testing order creation (UI, Gameplay, Invalid) 
 
-Testing old system, laggy and reduces performance, and frame drop on error creation. New system that handles null and invalids.
+Testing the order creation, which is a weighted random chance on a timer, that creates an order at a random valid location. This then is added to the players screen along with a timer.
+
+
 ### Test Data To Use
 
-Details of test data and reasons for selection. Details of test data and reasons for selection. Details of test data and reasons for selection.
+I will let the game create a lot of orders, as well as completing some to test the order creation at different stages of the game, to see how well it makes orders and handles invalids like the nullable current order at locations and the amount of locations avaliable.
 
 ### Expected Test Result
 
-Statement detailing what should happen. Statement detailing what should happen. Statement detailing what should happen. Statement detailing what should happen.
+Orders should be created at a valid location, setting the current order to be the one created, and should add correctly to the player screen, displaying the correct information without throwing errors. The system should handle the random chances and checks, working properly with invalid results. 
 
 ---
 
 ## Testing notoriety bar (Boundary)
 
-Example test description. Example test description. Example test description. Example test description. Example test description. Example test description.
+I will be testing the notoriety bar, which is a custom-made progressbar where the marker interpolates between the two bounds (Min and Max values of the bar)
 
 ### Test Data To Use
 
-Details of test data and reasons for selection. Details of test data and reasons for selection. Details of test data and reasons for selection.
+Running the game, and completing/failing orders to see how the bar handles changes in notoriety, as well as how it handles reaching either boundary.
 
 ### Expected Test Result
 
-Statement detailing what should happen. Statement detailing what should happen. Statement detailing what should happen. Statement detailing what should happen.
+The bar should reflect the current notoriety, staying in the correct spot for the players current notoriety value, and should not leave the boundaries of the bar, correctly responding to reaching the minimum or maximum boundaries. 
 
 ---
 
-## Testing endgame mechanics (Valid, Invalid)
+## Testing endgame mechanics (Gameplay, UI)
 
-Example test description. Example test description. Example test description. Example test description. Example test description. Example test description.
+I will be testing both end game states of the game, with the notoriety bar reaching either 0, or 100 which should trigger the game to end, and the player be taken to the end screen.
 
 ### Test Data To Use
 
-Details of test data and reasons for selection. Details of test data and reasons for selection. Details of test data and reasons for selection.
+To test it, achieving both endings of the game to see how well it handles shutting down the game, taking the player to the end screen and handling the audio.
 
 ### Expected Test Result
 
-Statement detailing what should happen. Statement detailing what should happen. Statement detailing what should happen. Statement detailing what should happen.
+Both the homeless (0 notoriety) and the jail (100 notoriety) endings should correctly trigger. They should stop all gameplay functions like player interactions, end the gameplay timers, and also hide any of the games UI and replace it with the end screen UI. Any remaining audio should be removed and the correct end screen's audio should begin to play. 
 
 ---
 
 ## Testing user inputs during the game (Invalid, Valid)
 
-Example test description. Example test description. Example test description. Example test description. Example test description. Example test description.
+I will be testing user inputs during gameplay, how it handles and reacts to certain inputs at certain times, and how it deals with invalid inputs from the player.
 
 ### Test Data To Use
 
-Details of test data and reasons for selection. Details of test data and reasons for selection. Details of test data and reasons for selection.
+Testing all inputs from the player, keyboard input, mouse clicks, mouse position and buttons in the GUI.
 
 ### Expected Test Result
 
-Statement detailing what should happen. Statement detailing what should happen. Statement detailing what should happen. Statement detailing what should happen.
+User input shouldn't result in unexpected things happening, players should only be able to do valid inputs at the right timer, any invalid inputs should be ignored or handled in a way that isn't destructive to the program and will break the game. 
 
 ---
 

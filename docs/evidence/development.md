@@ -92,3 +92,15 @@ To add the end games, tutorial and menu, remade the gamestate selection to use a
 ![MenuTutorial.gif](screenshots/MenuTutorial.gif)
 
 ---
+
+## Date: 04/05/2026
+
+Found various bugs after doing some playtesting, all were easy fixes. Some of the notable bugs were; 
+
+Certain buttons not responding to clicks if the users mouse was moving while they clicked on the element. I rewrote the custom mouse logic I had to use the mouse onRelease, as that would always call regardless of the state of the mouse.
+
+The game reset functions missed the pot state, so if the pots had acorns growing in them, then they would keep the acorns into the next game. Which just needed to have the pots be put back to empty state when the game resets.
+
+The audio system had a couple of points where certain actions could break the referencable sounds that should be ended. One of these occurred if the player lost while travelling, and the footstep sound would not stop and continue playing until the end of the sound. 
+
+---

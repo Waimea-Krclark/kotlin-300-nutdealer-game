@@ -1,0 +1,236 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="468a5237-3774-4be9-90ea-ea5da4cab833" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/gradle.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/gradle.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/highscore.csv" beforeDir="false" afterPath="$PROJECT_DIR$/highscore.csv" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="ExternalProjectsData">
+    <projectState path="$PROJECT_DIR$">
+      <ProjectState />
+    </projectState>
+  </component>
+  <component name="ExternalProjectsManager">
+    <system id="GRADLE">
+      <state>
+        <task path="$PROJECT_DIR$">
+          <activation />
+        </task>
+        <projects_view>
+          <tree_state>
+            <expand>
+              <path>
+                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
+                <item name="kotlin-300-nutdealer-game" type="f1a62948:ProjectNode" />
+              </path>
+              <path>
+                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
+                <item name="kotlin-300-nutdealer-game" type="f1a62948:ProjectNode" />
+                <item name="Tasks" type="e4a08cd1:TasksNode" />
+              </path>
+              <path>
+                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
+                <item name="kotlin-300-nutdealer-game" type="f1a62948:ProjectNode" />
+                <item name="Tasks" type="e4a08cd1:TasksNode" />
+                <item name="application" type="c8890929:TasksNode$1" />
+              </path>
+              <path>
+                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
+                <item name="kotlin-300-nutdealer-game" type="f1a62948:ProjectNode" />
+                <item name="Tasks" type="e4a08cd1:TasksNode" />
+                <item name="build" type="c8890929:TasksNode$1" />
+              </path>
+            </expand>
+            <select />
+          </tree_state>
+        </projects_view>
+      </state>
+    </system>
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Kotlin File" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;,
+    &quot;assignee&quot;: &quot;Waimea-Krclark&quot;
+  }
+}</component>
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/Waimea-Krclark/kotlin-300-nutdealer-game.git&quot;,
+    &quot;accountId&quot;: &quot;dc16d2af-da75-4f36-9d81-0d59239ac424&quot;
+  }
+}</component>
+  <component name="ProblemsViewState">
+    <option name="selectedTabId" value="CurrentFile" />
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 3
+}</component>
+  <component name="ProjectId" id="3B65jBwXXupRhrrDenwbEB8DrNF" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;Gradle.Build kotlin-300-nutdealer-game.executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.kotlin-300-nutdealer-game [clean].executor&quot;: &quot;Run&quot;,
+    &quot;Kotlin.MainKt.executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
+    &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
+    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/krclark/OneDrive - Waimea College/Documents/___Year 13/Digital Tech/Kotlin/kotlin-300-nutdealer-game/docs/evidence/screenshots&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.language.Kotlin&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  }
+}</component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\Users\krclark\OneDrive - Waimea College\Documents\___Year 13\Digital Tech\Kotlin\kotlin-300-nutdealer-game\docs\evidence\screenshots" />
+      <recent name="C:\Users\krclark\OneDrive - Waimea College\Documents\___Year 13\Digital Tech\Kotlin\kotlin-300-nutdealer-game\src\main\resources\images" />
+      <recent name="C:\Users\kc481\OneDrive - Waimea College\Documents\___Year 13\Digital Tech\Kotlin\kotlin-300-nutdealer-game\src\main\resources\images" />
+      <recent name="C:\Users\krclark\OneDrive - Waimea College\Documents\___Year 13\Digital Tech\Kotlin\kotlin-300-nutdealer-game\src\main\resources\Images" />
+      <recent name="C:\Users\krclark\OneDrive - Waimea College\Documents\___Year 13\Digital Tech\Kotlin\kotlin-300-nutdealer-game" />
+    </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\kc481\OneDrive - Waimea College\Documents\___Year 13\Digital Tech\Kotlin\kotlin-300-nutdealer-game\src\main\resources\images" />
+      <recent name="C:\Users\krclark\OneDrive - Waimea College\Documents\___Year 13\Digital Tech\Kotlin\kotlin-300-nutdealer-game\src\main\resources\images" />
+      <recent name="C:\Users\kc481\OneDrive - Waimea College\Documents\___Year 13\Digital Tech\Kotlin\kotlin-300-nutdealer-game\docs\evidence\screenshots" />
+      <recent name="C:\Users\krclark\OneDrive - Waimea College\Documents\___Year 13\Digital Tech\Kotlin\kotlin-300-nutdealer-game\docs\task\images" />
+    </key>
+  </component>
+  <component name="RunManager">
+    <configuration name="kotlin-300-nutdealer-game [clean]" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+      <ExternalSystemSettings>
+        <option name="executionName" />
+        <option name="externalProjectPath" value="$PROJECT_DIR$" />
+        <option name="externalSystemIdString" value="GRADLE" />
+        <option name="scriptParameters" />
+        <option name="taskDescriptions">
+          <list />
+        </option>
+        <option name="taskNames">
+          <list>
+            <option value="clean" />
+          </list>
+        </option>
+        <option name="vmOptions" />
+      </ExternalSystemSettings>
+      <ExternalSystemDebugServerProcess>true</ExternalSystemDebugServerProcess>
+      <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
+      <DebugAllEnabled>false</DebugAllEnabled>
+      <RunAsTest>false</RunAsTest>
+      <method v="2" />
+    </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Gradle.kotlin-300-nutdealer-game [clean]" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-jdk-9823dce3aa75-125ca727e0f0-intellij.indexing.shared.core-IU-243.23654.189" />
+        <option value="bundled-js-predefined-d6986cc7102b-822845ee3bb5-JavaScript-IU-243.23654.189" />
+      </set>
+    </attachedChunks>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="468a5237-3774-4be9-90ea-ea5da4cab833" name="Changes" comment="" />
+      <created>1773796813664</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1773796813664</updated>
+      <workItem from="1773796814801" duration="2697000" />
+      <workItem from="1773950491795" duration="3372000" />
+      <workItem from="1773956642510" duration="1103000" />
+      <workItem from="1773962105588" duration="73000" />
+      <workItem from="1774218306028" duration="3579000" />
+      <workItem from="1774222313906" duration="5507000" />
+      <workItem from="1774235074991" duration="301000" />
+      <workItem from="1774302457763" duration="201000" />
+      <workItem from="1774388668224" duration="658000" />
+      <workItem from="1774394953200" duration="4899000" />
+      <workItem from="1774400955052" duration="3668000" />
+      <workItem from="1774555415481" duration="3453000" />
+      <workItem from="1774565348384" duration="1676000" />
+      <workItem from="1774823030798" duration="59000" />
+      <workItem from="1774823097790" duration="3630000" />
+      <workItem from="1774826817176" duration="1000" />
+      <workItem from="1774904730976" duration="3246000" />
+      <workItem from="1774921605698" duration="1287000" />
+      <workItem from="1774987548494" duration="515000" />
+      <workItem from="1774999795917" duration="7538000" />
+      <workItem from="1775077706606" duration="3024000" />
+      <workItem from="1776637964577" duration="155000" />
+      <workItem from="1776641423285" duration="108000" />
+      <workItem from="1776641543598" duration="90000" />
+      <workItem from="1776641656506" duration="3072000" />
+      <workItem from="1776645396814" duration="950000" />
+      <workItem from="1776723361399" duration="629000" />
+      <workItem from="1776733260799" duration="3760000" />
+      <workItem from="1776817820441" duration="7103000" />
+      <workItem from="1776978317555" duration="3275000" />
+      <workItem from="1776988432064" duration="1939000" />
+      <workItem from="1776991584829" duration="2875000" />
+      <workItem from="1777422659327" duration="73000" />
+      <workItem from="1777422741627" duration="6730000" />
+      <workItem from="1777582924161" duration="3509000" />
+      <workItem from="1777841136913" duration="4000" />
+      <workItem from="1777841449770" duration="405000" />
+      <workItem from="1777847490259" duration="23000" />
+      <workItem from="1777847558057" duration="33000" />
+      <workItem from="1777847621813" duration="144000" />
+      <workItem from="1777847781252" duration="202000" />
+      <workItem from="1777848000187" duration="1099000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="XSLT-Support.FileAssociations.UIState">
+    <expand />
+    <select />
+  </component>
+</project>

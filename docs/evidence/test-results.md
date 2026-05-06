@@ -31,7 +31,9 @@ Testing player input with the travelling mechanic starting and during the animat
 
 ### Test Result
 
+![TravelTesting.gif](screenshots/TravelTesting.gif)
 
+The systems for travelling work, as well as the animation of the player interpolating to the new location, trying to interact with a new location while travelling will not work, and the player will have to wait until the dealer has reached the new location before commiting another action, both to avoid errors, and reinforce time management in the gameplay.
 
 ---
 
@@ -45,7 +47,17 @@ Using the systems to grow nuts, trying multiple different interactions to test h
 
 ### Test Result
 
+![OldNutTesting.gif](screenshots/OldNutTesting.gif)
 
+The main part of the Nut growing system works well, it handles expected user inputs as well as unexpected inputs from the player, however if the seed pack or water drop if drag out of bounds of the window, the game will throw an index out of bounds error.
+
+![MouseCheckFix.png](screenshots/MouseCheckFix.png)
+
+With a simple check to see if the mouse position is valid before attempting to update the position of the drag object, and removing it if not valid, it safely handles the boundary and invalid reference and stops it from throwing errors.
+
+![FixedNutTesting.gif](screenshots/FixedNutTesting.gif)
+
+Nut growing fixed and working properly
 
 ---
 

@@ -190,7 +190,7 @@ class MainWindow(val game: Game) {
         ImageIcon(ClassLoader.getSystemResource("images/Tutorial2.png")).scaled(1080, 726),
         ImageIcon(ClassLoader.getSystemResource("images/Tutorial3.png")).scaled(1080, 726)
     )
-    var referenceableSound = playSound(ClassLoader.getSystemResourceAsStream("sounds/menuMusic.wav")!!.readBytes())
+    private var referenceableSound = playSound(ClassLoader.getSystemResourceAsStream("sounds/menuMusic.wav")!!.readBytes())
 
     //World Map Elements
     private val locationMarker = JLabel()

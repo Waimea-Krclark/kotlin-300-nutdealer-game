@@ -72,7 +72,17 @@ I will let the game create a lot of orders, as well as completing some to test t
 
 ### Test Result
 
-old system, the lag and perfomance issues, new system better performance and better invalid handling.
+![oldOrderCode.png](screenshots/oldOrderCode.png)
+
+The old system orders was very slow, inconsistent and handled any changes in data poorly. The performance of the order creation was terrible, usually freezing the game briefly when trying to create and order and sometimes failing to do so entirely. As this system was terrible I scrapped it entirely and completely rewrote it.
+
+![FinalOrderLogic.png](screenshots/FinalOrderLogic.png)
+
+This new system doesn't impact the performance of the game due to it not having to check through each location to create an order. It handles invalid data like there not being any possible locations, or the nullable current order in the location classes by safely checking and getting variables, and using a safe .let{} call to actually create the order so it will only create an order if the location in valid, and the current order is null.
+
+![CreatingOrders.gif](screenshots/CreatingOrders.gif)
+
+Now orders are being added correctly, the frequency is scaling correctly with the difficulty. Order will be removed at the end of their timer properly, and will also be removed if the player completes the order. Orders also will not be attempted to be created if the orders are at capacity (MAX_ORDERS = 3)
 
 ---
 
@@ -86,7 +96,9 @@ Running the game, and completing/failing orders to see how the bar handles chang
 
 ### Test Result
 
+![NotorietyBar.gif](screenshots/NotorietyBar.gif)
 
+The Notoriety bar is in the correct position for the players notoriety, and always updates to the next correct position. Completing and failing orders also changes the notoriety which updates the bar properly. The marker never leaves the bounds of the bar.
 
 ---
 

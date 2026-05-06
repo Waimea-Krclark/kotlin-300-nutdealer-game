@@ -746,21 +746,20 @@ class MainWindow(val game: Game) {
         * */
 
         game.notoriety-= NOTORIETY_PASSIVE_DECREASE//Reduces Notoriety slightly over time
-        notorietyMarker.setBounds((NOTORIETY_MIN_X + game.notoriety * (NOTORIETY_MAX_X - NOTORIETY_MIN_X)).toInt(), 600, 25, 25)
 
-        if (game.notoriety <= 0){ //Ends game with homeless ending if notoriety = 0
+        if (game.notoriety <= 0.0){ //Ends game with homeless ending if notoriety = 0
             game.notoriety = 0.0
-            notorietyMarker.setBounds((NOTORIETY_MIN_X + game.notoriety * (NOTORIETY_MAX_X - NOTORIETY_MIN_X)).toInt(), 600, 25, 25)
+            notorietyMarker.setBounds(NOTORIETY_MIN_X, 600, 25, 25)
             stopSound(referenceableSound)
             endGame(ImageIcon(ClassLoader.getSystemResource("images/HomelessEnding.png")))
             referenceableSound= playSound(ClassLoader.getSystemResourceAsStream("sounds/homeless.wav")!!.readBytes())
-        }else if (game.notoriety >= 1){ //Ends game with jail ending if notoriety = 1
+        }else if (game.notoriety >= 1.0){ //Ends game with jail ending if notoriety = 1
             game.notoriety = 1.0
-            notorietyMarker.setBounds((NOTORIETY_MIN_X + game.notoriety * (NOTORIETY_MAX_X - NOTORIETY_MIN_X)).toInt(), 600, 25, 25)
+            notorietyMarker.setBounds(NOTORIETY_MAX_X, 600, 25, 25)
             stopSound(referenceableSound)
             endGame(ImageIcon(ClassLoader.getSystemResource("images/JailEnding.png")))
             referenceableSound= playSound(ClassLoader.getSystemResourceAsStream("sounds/jail.wav")!!.readBytes())
-        }
+        } else notorietyMarker.setBounds((NOTORIETY_MIN_X + game.notoriety * (NOTORIETY_MAX_X - NOTORIETY_MIN_X)).toInt(), 600, 25, 25)
 
         for (location in game.locations){
             val orderIndex = game.orders.indexOf(location.currentOrder)//gets the order list index of the locations order

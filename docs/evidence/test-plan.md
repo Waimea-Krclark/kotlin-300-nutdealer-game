@@ -87,7 +87,7 @@ I will be testing both end game states of the game, with the notoriety bar reach
 
 ### Test Data To Use
 
-To test it, achieving both endings of the game to see how well it handles shutting down the game, taking the player to the end screen and handling the audio.
+To test it, achieving both endings of the game to see how well it handles shutting down the game, taking the player to the end screen and handling the audio. As well as saving/loading the players highscore.
 
 ### Expected Test Result
 
@@ -109,3 +109,16 @@ User input shouldn't result in unexpected things happening, players should only 
 
 ---
 
+## Testing Main Menu (Valid, Boundary)
+
+I will be testing the main menu, with its 3 options and also the graphics, input and audio.
+
+### Test Data To Use
+
+Interacting with the three options to see how they are handled, testing the Tutorial pages and the boundaries of that. 
+
+### Expected Test Result
+
+The Play button should remove all menu elements, stopping the music, and correcting displaying and setting up the game. The Quit button should exit the program properly, and the tutorial button should display the pages of the tutorial allowing the player to flick through them, and then the tutorial should close and go back to the menu after the final page has been read.
+
+---

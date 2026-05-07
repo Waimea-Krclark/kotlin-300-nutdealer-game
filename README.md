@@ -13,6 +13,7 @@ A game about growing and dealing illegal nuts to your squirrel customers, trying
 - Program source code can be found in the [src/main/kotlin](src/main/kotlin) folder
 - Program test plan is in [test-plan.md](docs/evidence/test-plan.md) in the docs folder
 - Program test evidence is in [test-results.md](docs/evidence/test-results.md) in the docs folder
+- A packaged .exe version of the game can be downloaded from [Itch.io](https://fasrturnipgames.itch.io/nutdealer-legacy)
 
 ---
 
@@ -28,6 +29,6 @@ The project is written in the [Kotlin](https://kotlinlang.org) programming langu
 - Object-oriented programming (OOP) classes and objects
 - Self-defined types
 - Using non-core API, library or framework
-- Using complex data structures (e.g. stacks, queues, trees)
 
-**EDIT LIST ABOVE TO MATCH YOUR PROJECT**
+
+

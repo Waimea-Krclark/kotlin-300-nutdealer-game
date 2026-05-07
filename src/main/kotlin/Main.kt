@@ -1,3 +1,18 @@
+/**
+ * =====================================================================
+ * Programming Project for NCEA Level 3, Standard 91906
+ * ---------------------------------------------------------------------
+ * Project Name:   Nutdealer
+ * Project Author: Kieran Clark
+ * GitHub Repo:    https://github.com/Waimea-Krclark/kotlin-300-nutdealer-game
+ * ---------------------------------------------------------------------
+ * Notes:
+ * A game about growing and dealing illegal nuts to your squirrel customers,
+ * trying to keep those customers happy and your reputation up without it
+ * getting too high that the nut police find out about your business.
+ * =====================================================================
+ */
+
 import com.formdev.flatlaf.themes.FlatMacDarkLaf
 import java.awt.Color
 import java.awt.Font
@@ -20,7 +35,7 @@ const val MAX_ORDERS = 3
 const val NOTORIETY_MIN_X = 331
 const val NOTORIETY_MAX_X = 831
 const val ACORN_VALUE = 100
-const val NOTORIETY_PASSIVE_DECREASE = 0.0012 //0.0012 default
+const val NOTORIETY_PASSIVE_DECREASE = 0.0012
 const val STEP_SIZE = 2
 
 //Scaling for images
@@ -48,7 +63,7 @@ enum class DragType{ //Drag type enum for different action with the drag/drop in
 fun playSound(bytes: ByteArray): Clip {
     // The sound bytes are passed to an audio stream thread
     val stream = AudioSystem.getAudioInputStream(bytes.inputStream())
-    val sound = AudioSystem.getClip().apply {
+    val sound = AudioSystem.getClip().apply { // Plays Sound
         open(stream)
         start()
         addLineListener { if (it.type == LineEvent.Type.STOP) close() }
@@ -256,6 +271,7 @@ class MainWindow(val game: Game) {
     private val progressbarTimer = Timer(300, null)
     private val orderDirectorTimer = Timer(1000, null)
 
+    //  --------------------------------- WINDOW SETUP
     init {
         //Creates the order notification objects, done in the init because logic can't be done in declarations
         for (i in 0 until MAX_ORDERS){

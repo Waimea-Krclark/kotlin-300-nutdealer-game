@@ -2,6 +2,10 @@
 
 The test results show the actual outcome of the testing, following the [Test Plan](test-plan.md)
 
+### The map of Nutdealer
+
+![Map.png](screenshots/Map.png)
+
 ---
 
 ## Testing Bounding Boxes on Locations (Boundary)
@@ -108,10 +112,16 @@ I will be testing both end game states of the game, with the notoriety bar reach
 
 ### Test Data To Use
 
-To test it, achieving both endings of the game to see how well it handles shutting down the game, taking the player to the end screen and handling the audio.
+To test it, achieving both endings of the game to see how well it handles shutting down the game, taking the player to the end screen and handling the audio. As well as saving/loading the players highscore.
 
 ### Test Result
 
+![HomelessEnding.gif](screenshots/HomelessEnding.gif)
+![JailEnding.gif](screenshots/JailEnding.gif)
+
+Both Endings work consistently, only triggering when they should. The score is displaying properly, and it reads the players highscore, writing over it if the score is greater than the saved highscore. The highscore is correctly reading and writing and isn't changing between games unless the highscore should be updated.
+
+While doing this test I found a minor bug with the audio system, most sounds were correctly cutting off, but if the player was travelling then the footstep looping audio would continue to play, it was an easy solve that just required stopping and resetting the referencableSound variable, which ended the footstep audio on game end. Aside from that the game audio was working properly and the endgame audio would play.
 
 
 ---
@@ -126,7 +136,26 @@ Testing all inputs from the player, keyboard input, mouse clicks, mouse position
 
 ### Test Result
 
+For this test I tried doing various inputs at different times of the game to see whether it would correctly handle invalid inputs. As the actual screen background is interactable for the map, when the player clicks on it, it will try to get the new location which should only happen on the world map, other interactions like buttons and inputs I tried that should only work at certain times could also have this problem, but the checks that are programmed into those systems don't allow them to run when they shouldn't, stopping any errors from invalid inputs.
 
+Some of the game interactions use the mouse position, and if that is out of bounds of the window it will be null, throwing errors. To avoid this there are checks to see if the mouse position is valid before it tries to use the mouse position.
+
+The game doesn't require any keyboard input and is only controlled with mouse inputs, because there is no keyboard consumption, inputting any keys will have no effect on the game.
 
 ---
 
+## Testing Main Menu (Valid, Boundary)
+
+I will be testing the main menu, with its 3 options and also the graphics, input and audio.
+
+### Test Data To Use
+
+Interacting with the three options to see how they are handled, testing the Tutorial pages and the boundaries of that.
+
+### Expected Test Result
+
+![MenuInteractions.gif](screenshots/MenuInteractions.gif)
+
+All three of the buttons work as expected, throwing no errors and correctly performing their function. The tutorial will cycle through correctly, starting at the first index, and when reaching the final, it will close the tutorial instead of trying to go to the next page.
+
+---
